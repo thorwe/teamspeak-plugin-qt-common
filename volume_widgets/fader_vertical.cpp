@@ -14,6 +14,8 @@ FaderVertical::FaderVertical(QWidget *parent) :
     ui->label_quiet->setText(qApp->translate("PlaybackSoundSetupDialog", "Quiet"));
 }
 
+FaderVertical::~ FaderVertical() = default;
+
 float FaderVertical::getValue() const
 {
     return static_cast< float >(ui->doubleSpinBox->value());

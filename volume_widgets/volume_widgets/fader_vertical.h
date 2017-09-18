@@ -18,6 +18,7 @@ class FaderVertical : public QWidget
     
 public:
     explicit FaderVertical(QWidget *parent = 0);
+    ~ FaderVertical();
 
     float getValue() const;
     void setValue(float val) { onDoubleSpinBoxValueChanged(static_cast< float >(val)); }
