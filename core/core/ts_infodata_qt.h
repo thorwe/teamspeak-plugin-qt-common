@@ -31,27 +31,25 @@ public:
     PluginItemType getInfoType() const;
     uint64 getInfoId() const;
 
-//    void setHomeId(uint64 serverConnectionHandlerID);
-    
-    bool Register(QObject *p, bool isRegister, int priority);
-    void onInfoData(uint64 serverConnectionHandlerID, uint64 id, PluginItemType type, char **data);
+    bool Register(QObject *p, bool is_register, int priority);
+    void onInfoData(uint64 server_connection_id, uint64 id, PluginItemType type, char **data);
 
 signals:
     void infoTypeChanged(PluginItemType);
     void infoIdChanged(uint64);
     
 public slots:
-    void RequestUpdate(uint64 serverConnectionHandlerID, uint64 id, PluginItemType type);
-    void RequestUpdate(uint64 serverConnectionHandlerID, uint64 id) {RequestUpdate(serverConnectionHandlerID,id,PLUGIN_CHANNEL);}
-    void RequestUpdate(uint64 serverConnectionHandlerID, anyID id) {RequestUpdate(serverConnectionHandlerID,id,PLUGIN_CLIENT);}
-    void RequestUpdate(uint64 serverConnectionHandlerID) {RequestUpdate(serverConnectionHandlerID,NULL,PLUGIN_SERVER);}
+    void RequestUpdate(uint64 server_connection_id, uint64 id, PluginItemType type);
+    void RequestUpdate(uint64 server_connection_id, uint64 id) {RequestUpdate(server_connection_id, id, PLUGIN_CHANNEL);}
+    void RequestUpdate(uint64 server_connection_id, anyID id) {RequestUpdate(server_connection_id, id, PLUGIN_CLIENT);}
+    void RequestUpdate(uint64 server_connection_id) {RequestUpdate(server_connection_id, NULL, PLUGIN_SERVER);}
     void RequestSelfUpdate();
 
 private:
-    PluginItemType m_InfoType = PLUGIN_SERVER;
-    uint64 m_InfoId = 0;
+    PluginItemType m_info_type = PLUGIN_SERVER;
+    uint64 m_info_id = 0;
 
-    uint64 m_homeId = 0;
+    uint64 m_home_id = 0;
 
     QMultiMap<int, QPointer<QObject> > m_callbacks;
 };

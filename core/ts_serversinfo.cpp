@@ -10,11 +10,11 @@ TSServersInfo::TSServersInfo(QObject* parent)
 	: QObject(parent)
 {}
 
-TSServerInfo* TSServersInfo::get_server_info(uint64 serverConnectionHandlerID, bool create_on_not_exist)
+TSServerInfo* TSServersInfo::get_server_info(uint64 server_connection_id, bool create_on_not_exist)
 {
-    if (m_serverInfoMap.contains(serverConnectionHandlerID))
+    if (m_server_infos.contains(server_connection_id))
     {
-        const auto kServerInfo = m_serverInfoMap.value(serverConnectionHandlerID);
+        const auto kServerInfo = m_server_infos.value(server_connection_id);
         if (!kServerInfo)
         {
             TSLogging::Error("(TSServersInfo::get_server_info): Invalid pointer.");
@@ -26,14 +26,14 @@ TSServerInfo* TSServersInfo::get_server_info(uint64 serverConnectionHandlerID, b
     {
         if (create_on_not_exist)
         {
-            auto server_info = new TSServerInfo(this, serverConnectionHandlerID);
-            m_serverInfoMap.insert(serverConnectionHandlerID, server_info);
+            auto server_info = new TSServerInfo(this, server_connection_id);
+            m_server_infos.insert(server_connection_id, server_info);
             connect(server_info, &TSServerInfo::serverGroupListUpdated, this, &TSServersInfo::serverGroupListUpdated, Qt::UniqueConnection);
             return server_info;
         }
         else
         {
-            TSLogging::Error("(TSServersInfo::get_server_info): serverConnectionHandlerID not found.");
+            TSLogging::Error("(TSServersInfo::get_server_info): server_connection_id not found.");
             return nullptr;
         }
     }
@@ -41,7 +41,7 @@ TSServerInfo* TSServersInfo::get_server_info(uint64 serverConnectionHandlerID, b
 
 uint64 TSServersInfo::find_server_by_unique_id(QString server_id)
 {
-    uint64 schandler_id = 0;
+    uint64 server_connection_id = 0;
     {
         uint64* servers;
         if (ts3Functions.getServerConnectionHandlerList(&servers) == ERROR_ok)
@@ -51,57 +51,57 @@ uint64 TSServersInfo::find_server_by_unique_id(QString server_id)
                 auto ts_server_info = get_server_info(*server, true);
                 if (ts_server_info && (server_id == ts_server_info->getUniqueId()))
                 {
-                    schandler_id = ts_server_info->getServerConnectionHandlerID();
+                    server_connection_id = ts_server_info->getServerConnectionHandlerID();
                     break;
                 }
             }
             ts3Functions.freeMemory(servers);
         }
     }
-    return schandler_id;
+    return server_connection_id;
 }
 
-void TSServersInfo::onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber)
+void TSServersInfo::onConnectStatusChangeEvent(uint64 server_connection_id, int new_status, unsigned int error_number)
 {
-    if (newStatus == STATUS_DISCONNECTED)
+    if (new_status == STATUS_DISCONNECTED)
     {
-        if (m_serverInfoMap.contains(serverConnectionHandlerID))
+        if (m_server_infos.contains(server_connection_id))
         {
-            auto p_ServerInfo = m_serverInfoMap.value(serverConnectionHandlerID);
+            auto p_ServerInfo = m_server_infos.value(server_connection_id);
             if (p_ServerInfo)
                 p_ServerInfo.data()->deleteLater();
 
-            m_serverInfoMap.remove(serverConnectionHandlerID);
+            m_server_infos.remove(server_connection_id);
         }
     }
 
-    emit connectStatusChanged(serverConnectionHandlerID, newStatus, errorNumber);
+    emit connectStatusChanged(server_connection_id, new_status, error_number);
 }
 
-void TSServersInfo::onServerGroupListEvent(uint64 serverConnectionHandlerID, uint64 serverGroupID, const char *name, int type, int iconID, int saveDB)
+void TSServersInfo::onServerGroupListEvent(uint64 server_connection_id, uint64 server_group_id, const char *name, int type, int icon_id, int save_db)
 {
-    auto ts_server_info = get_server_info(serverConnectionHandlerID, true);
+    auto ts_server_info = get_server_info(server_connection_id, true);
     if (ts_server_info)
-        ts_server_info->onServerGroupListEvent(serverGroupID,name,type,iconID,saveDB);
+        ts_server_info->onServerGroupListEvent(server_group_id, name, type, icon_id, save_db);
 }
 
-void TSServersInfo::onServerGroupListFinishedEvent(uint64 serverConnectionHandlerID)
+void TSServersInfo::onServerGroupListFinishedEvent(uint64 server_connection_id)
 {
-    auto ts_server_info = get_server_info(serverConnectionHandlerID, false);
+    auto ts_server_info = get_server_info(server_connection_id, false);
     if (ts_server_info)
         ts_server_info->onServerGroupListFinishedEvent();
 }
 
-void TSServersInfo::onChannelGroupListEvent(uint64 serverConnectionHandlerID, uint64 channelGroupID, const char *name, int type, int iconID, int saveDB)
+void TSServersInfo::onChannelGroupListEvent(uint64 server_connection_id, uint64 channel_group_id, const char *name, int type, int icon_id, int save_db)
 {
-    auto ts_server_info = get_server_info(serverConnectionHandlerID, true);
+    auto ts_server_info = get_server_info(server_connection_id, true);
     if (ts_server_info)
-        ts_server_info->onChannelGroupListEvent(channelGroupID,name,type,iconID,saveDB);
+        ts_server_info->onChannelGroupListEvent(channel_group_id, name, type, icon_id, save_db);
 }
 
-void TSServersInfo::onChannelGroupListFinishedEvent(uint64 serverConnectionHandlerID)
+void TSServersInfo::onChannelGroupListFinishedEvent(uint64 server_connection_id)
 {
-    auto ts_server_info = get_server_info(serverConnectionHandlerID, false);
+    auto ts_server_info = get_server_info(server_connection_id, false);
     if (ts_server_info)
         ts_server_info->onChannelGroupListFinishedEvent();
 }
