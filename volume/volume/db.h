@@ -46,8 +46,8 @@ db2lin_alt(float db)
     else return powf(10, (5.000000e-02f * db));
 }
 
-static inline float
-db2lin_alt2(float db)
+static inline double
+db2lin_alt2(double db)
 {
     if (db <= -200.0f) return 0.0f;
     else return exp(db/20  * log(10.0f));   // went mad with ambigous call with 10 (identified as int)

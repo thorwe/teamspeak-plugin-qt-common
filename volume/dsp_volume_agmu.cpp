@@ -1,42 +1,43 @@
 #include "volume/dsp_volume_agmu.h"
 
-#include <QtCore/QVarLengthArray>
-#include <QtCore/qmath.h>
-
 #include "volume/dsp_helpers.h"
 #include "volume/db.h"
-#include "core/ts_logging_qt.h"
 
-DspVolumeAGMU::DspVolumeAGMU(QObject *parent)
-{
-    setParent(parent);
-}
+#include <algorithm>
+#include <limits>
 
 // Funcs
+namespace {
+    float compute_gain_desired(int16_t peak)
+    {
+        return std::min((lin2db(std::numeric_limits<int16_t>::max() / peak)) - 2, 12.0f); // leave some headroom
+    }
+}
 
 void DspVolumeAGMU::process(int16_t* samples, int32_t sample_count, int32_t channels)
 {
+    const auto old_peak = m_peak.load();
     sample_count = sample_count * channels;
     auto peak = getPeak(samples, sample_count);
-    peak = qMax(m_peak, peak);
-    if (peak != m_peak)
+    peak = std::max(old_peak, peak);
+    if (peak != old_peak)
     {
-        m_peak = peak;
-        setGainDesired(computeGainDesired());
+        m_peak.store(peak);
+        set_gain_desired(compute_gain_desired(peak));
     }
-    setGainCurrent(GetFadeStep(sample_count));
-    doProcess(samples, sample_count);
+    set_gain_current(fade_step(sample_count));
+    do_process(samples, sample_count);
 }
 
 // Compute gain change
-float DspVolumeAGMU::GetFadeStep(int sampleCount)
+float DspVolumeAGMU::fade_step(int32_t sample_count)
 {
-    auto current_gain = getGainCurrent();
-    auto desired_gain = getGainDesired();
+    auto current_gain = gain_current();
+    auto desired_gain = gain_desired();
     if (current_gain != desired_gain)
     {
-        float fade_step_down = (kRateQuieter / m_sampleRate) * sampleCount;
-        float fade_step_up = (kRateLouder / m_sampleRate) * sampleCount;
+        float fade_step_down = (kRateQuieter / m_sample_rate) * sample_count;
+        float fade_step_up = (kRateLouder / m_sample_rate) * sample_count;
         if (current_gain < desired_gain - fade_step_up)
             current_gain += fade_step_up;
         else if (current_gain > desired_gain + fade_step_down)
@@ -46,19 +47,4 @@ float DspVolumeAGMU::GetFadeStep(int sampleCount)
 
     }
     return current_gain;
-}
-
-int16_t DspVolumeAGMU::GetPeak() const
-{
-    return m_peak;
-}
-
-void DspVolumeAGMU::setPeak(int16_t val)
-{
-    m_peak = val;
-}
-
-float DspVolumeAGMU::computeGainDesired()
-{
-    return qMin((lin2db(32768.f / m_peak)) -2, 12.0f); // leave some headroom
 }

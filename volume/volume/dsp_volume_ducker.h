@@ -1,42 +1,32 @@
 #pragma once
 
-#include <QtCore/QObject>
 #include "dsp_volume.h"
+
+#include <atomic>
 
 class DspVolumeDucker : public DspVolume
 {
-    Q_OBJECT
-    Q_PROPERTY(float attackRate READ getAttackRate WRITE setAttackRate)
-    Q_PROPERTY(float decayRate READ getDecayRate WRITE setDecayRate)
-
-    Q_PROPERTY(bool gainAdjustment READ getGainAdjustment WRITE setGainAdjustment)
-    Q_PROPERTY(bool duckBlocked READ isDuckBlocked WRITE setDuckBlocked)  // is Whispering Blacklisting
 
 public:
-    explicit DspVolumeDucker(QObject *parent = 0);
-    
-    float GetFadeStep(int sampleCount);
+    void set_processing(bool val) override;
+    float fade_step(int sample_count) override;
 
-    float getAttackRate() const;
-    float getDecayRate() const;
-    bool getGainAdjustment() const;
-    bool isDuckBlocked() const;
-    void setDuckBlocked(bool val);
-    void setProcessing(bool val);
+    float attack_rate() const { return m_attack_rate.load(); };
+    void set_attack_rate(float val) { m_attack_rate.store(val); };
 
-signals:
-    void attackRateChanged(float);
-    void decayRateChanged(float);
+    float decay_rate() const { return m_decay_rate.load(); };
+    void set_decay_rate(float val) { m_decay_rate.store(val); };
 
-public slots:
-    void setAttackRate(float val);
-    void setDecayRate(float val);
-    void setGainAdjustment(bool val);
+    bool gain_adjustment() const { return m_gain_adjustment.load(); };
+    void set_gain_adjustment(bool val) { m_gain_adjustment.store(val); };
+
+    bool is_duck_blocked() const { return m_is_duck_blocked.load(); }; // is Whispering Blacklisting
+    void set_duck_blocked(bool val) { m_is_duck_blocked.store(val); };
 
 private:
-    float m_attackRate = 120.0f;
-    float m_decayRate = 90.0f;
+    std::atomic<float> m_attack_rate = 120.0f;
+    std::atomic<float> m_decay_rate = 90.0f;
 
-    bool m_gainAdjustment = false;
-    bool m_isDuckBlocked = false;
+    std::atomic_bool m_gain_adjustment = false;
+    std::atomic_bool m_is_duck_blocked = false;
 };

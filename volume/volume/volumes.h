@@ -1,37 +1,34 @@
 #pragma once
 
-#include <QtCore/QObject>
-#include <QtCore/QHash>
-#include "teamspeak/public_definitions.h"
 #include "dsp_volume.h"
 
-class Volumes : public QObject
-{
-    Q_OBJECT
+#include "core/client_storage.h"
 
-public:
+#include "teamspeak/public_definitions.h"
+#include "teamspeak/clientlib_publicdefinitions.h"
 
-    enum class Volume_Type : uint_least8_t
-    {
-        MANUAL = 0,
-        DUCKER,
-        AGMU
-    };
+#include <cstdint>
 
-    explicit Volumes(QObject *parent = 0, Volume_Type volume_type = Volume_Type::MANUAL);
+namespace thorwe {
 
-    DspVolume* AddVolume(uint64 serverConnectionHandlerID, anyID clientID);
-    void DeleteVolume(DspVolume *dspObj);
-    void RemoveVolume(uint64 serverConnectionHandlerID, anyID clientID);
-    void RemoveVolumes(uint64 serverConnectionHandlerID);
-    void RemoveVolumes();
-    bool ContainsVolume(uint64 serverConnectionHandlerID, anyID clientID);
-    DspVolume* GetVolume(uint64 serverConnectionHandlerID, anyID clientID);
+    namespace ts {
+        using connection_id_t = uint64_t;
+        using client_id_t = uint16_t;
+    }
 
-public slots:
-    void onConnectStatusChanged(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber);
+    namespace volume {
+        template<typename T = DspVolume>
+        class Volumes : public Safe_Client_Storage<T> {
+        
+        public:
+            std::pair<T*, bool> add_volume(ts::connection_id_t connection_id, ts::client_id_t client_id) { return add_item(connection_id, client_id, std::make_unique<T>()); }
 
-private:
-    QHash<QPair<uint64,anyID>, DspVolume* > m_volumes;
-    Volume_Type m_volume_type;
-};
+            void onConnectStatusChanged(ts::connection_id_t connection_id, int new_status, unsigned int /*error_number*/)
+            {
+                if (new_status == ConnectStatus::STATUS_DISCONNECTED)
+                    delete_items(connection_id);
+            }
+        };
+    }
+
+} // namespace thorwe

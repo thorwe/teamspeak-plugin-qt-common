@@ -14,6 +14,8 @@ include_directories(
 )
 
 set (TS_QT_CORE
+    "${CMAKE_CURRENT_LIST_DIR}/core/core/definitions.h"
+    "${CMAKE_CURRENT_LIST_DIR}/core/core/client_storage.h"
     "${CMAKE_CURRENT_LIST_DIR}/core/core/plugin_base.h"
     "${CMAKE_CURRENT_LIST_DIR}/core/core/translator.h"
     "${CMAKE_CURRENT_LIST_DIR}/core/core/module.h"
@@ -54,7 +56,6 @@ if (WITH_VOLUME OR WITH_VOLUME_WIDGETS)
         "${CMAKE_CURRENT_LIST_DIR}/volume/volume/dsp_volume_ducker.h"
         "${CMAKE_CURRENT_LIST_DIR}/volume/dsp_volume_ducker.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/volume/volume/volumes.h"
-        "${CMAKE_CURRENT_LIST_DIR}/volume/volumes.cpp"
     )
     
     include_directories(

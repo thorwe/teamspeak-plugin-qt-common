@@ -1,86 +1,38 @@
 #include "volume/dsp_volume_ducker.h"
 
-DspVolumeDucker::DspVolumeDucker(QObject *parent)
+void DspVolumeDucker::set_processing(bool val)
 {
-    this->setParent(parent);
-}
-
-float DspVolumeDucker::getAttackRate() const
-{
-    return m_attackRate;
-}
-
-void DspVolumeDucker::setAttackRate(float val)
-{
-    if (m_attackRate != val) {
-        m_attackRate = val;
-        emit attackRateChanged(val);
-    }
-}
-
-float DspVolumeDucker::getDecayRate() const
-{
-    return m_decayRate;
-}
-
-void DspVolumeDucker::setDecayRate(float val)
-{
-    if (m_decayRate != val) {
-        m_decayRate = val;
-        emit decayRateChanged(val);
-    }
-}
-
-bool DspVolumeDucker::getGainAdjustment() const
-{
-    return m_gainAdjustment;
-}
-
-void DspVolumeDucker::setGainAdjustment(bool val)
-{
-    m_gainAdjustment = val;
-}
-
-bool DspVolumeDucker::isDuckBlocked() const
-{
-    return m_isDuckBlocked;
-}
-
-void DspVolumeDucker::setDuckBlocked(bool val)
-{
-    m_isDuckBlocked = val;
-}
-
-void DspVolumeDucker::setProcessing(bool val)
-{
-    if(true==val)
+    if (val)
     {
-        if (true==getGainAdjustment())
-            setGainCurrent(getGainDesired());
+        if (gain_adjustment())
+            set_gain_current(gain_desired());
         else
-            setGainCurrent(VOLUME_0DB);
+            set_gain_current(VOLUME_0DB);
     }
     else
-        setGainCurrent(VOLUME_0DB);
+        set_gain_current(VOLUME_0DB);
 
-    m_isProcessing = val;
+    m_processing.store(val);
 }
 
 
 // virtual funcs
-float DspVolumeDucker::GetFadeStep(int sampleCount)
+float DspVolumeDucker::fade_step(int sample_count)
 {
     // compute ducker gain
-    float current_gain = getGainCurrent();
-    if (isDuckBlocked() || isMuted())
+    float current_gain = gain_current();
+    if (is_duck_blocked() || muted())
         current_gain = VOLUME_0DB;
     else
     {
-        auto desired_gain = getGainDesired();
-        if ((m_gainAdjustment == true) && (current_gain != desired_gain))   // is attacking / adjusting
+        const auto gain_adjustment = m_gain_adjustment.load();
+        const auto decay_rate = m_decay_rate.load();
+        auto desired_gain = gain_desired();
+        if (gain_adjustment && (current_gain != desired_gain))   // is attacking / adjusting
         {
-            float fade_step_down = (m_attackRate / m_sampleRate) * sampleCount;
-            float fade_step_up = (m_decayRate / m_sampleRate) * sampleCount;
+            const auto attack_rate = m_attack_rate.load();
+            float fade_step_down = (attack_rate / m_sample_rate) * sample_count;
+            float fade_step_up = (decay_rate / m_sample_rate) * sample_count;
             if (current_gain < desired_gain - fade_step_up)
                 current_gain += fade_step_up;
             else if (current_gain > desired_gain + fade_step_down)
@@ -88,9 +40,9 @@ float DspVolumeDucker::GetFadeStep(int sampleCount)
             else
                 current_gain = desired_gain;
         }
-        else if ((m_gainAdjustment == false) && (current_gain != VOLUME_0DB))    // is releasing
+        else if ((!gain_adjustment) && (current_gain != VOLUME_0DB))    // is releasing
         {
-            float fade_step = (m_decayRate / m_sampleRate) * sampleCount;
+            float fade_step = (decay_rate / m_sample_rate) * sample_count;
             if (current_gain < VOLUME_0DB - fade_step)
                 current_gain += fade_step;
             else if (current_gain > VOLUME_0DB + fade_step)

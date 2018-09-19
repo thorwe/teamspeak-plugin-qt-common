@@ -1,47 +1,38 @@
 #pragma once
 
-#include <QtCore/QObject>
+constexpr float VOLUME_0DB = (0.0f);
+constexpr float VOLUME_MUTED = (-200.0f);
 
-const float VOLUME_0DB = (0.0f);
-const float VOLUME_MUTED = (-200.0f);
+#include <atomic>
 
-class DspVolume : public QObject
+class DspVolume
 {
-    Q_OBJECT
-    Q_PROPERTY(float gainCurrent READ getGainCurrent WRITE setGainCurrent NOTIFY gainCurrentChanged)
-    Q_PROPERTY(float gainDesired READ getGainDesired WRITE setGainDesired NOTIFY gainDesiredChanged)
-    Q_PROPERTY(bool processing READ isProcessing WRITE setProcessing)  // is Talking
-    Q_PROPERTY(bool muted READ isMuted WRITE setMuted)
 
 public:
-    explicit DspVolume(QObject *parent = 0);
-
-    // Properties
-    void setGainCurrent(float val);
-    float getGainCurrent() const;
-    void setGainDesired(float val);
-    float getGainDesired() const;
-    bool isProcessing() const;
-    virtual void setProcessing(bool val);
-    void setMuted(bool val);
-    bool isMuted() const;
-
-    virtual void process(short* samples, int sampleCount, int channels);
-    virtual float GetFadeStep(int sampleCount);
-
-signals:
-    void gainCurrentChanged(float);
-    void gainDesiredChanged(float);
-
-public slots:
+    // values in dB
     
+    float gain_current() const { return m_gain_current.load(); };
+    void set_gain_current(float val) { m_gain_current.store(val); };
+    
+    float gain_desired() const { return m_gain_desired.load(); };
+    void set_gain_desired(float val) { m_gain_desired.store(val); };
+    
+    bool muted() const { return m_muted.load(); };
+    void set_muted(bool val) { m_muted.store(val); };
+
+    bool processing() const { return m_processing.load(); };
+    virtual void set_processing(bool val) { m_processing.store(val); };
+
+    virtual void process(short* samples, int frame_count, int channels);
+    virtual float fade_step(int sample_count);
+
 protected:
-    unsigned short m_sampleRate = 48000;
-    void doProcess(short *samples, int sampleCount);
-    bool m_isProcessing = false;
+    void do_process(int16_t* samples, int32_t sample_count);
+    std::atomic_bool m_processing = false;
+    const uint16_t m_sample_rate = 48000;
 
 private:
-    float m_gainCurrent = VOLUME_0DB;   // decibels
-    float m_gainDesired = VOLUME_0DB;   // decibels
-    bool m_muted = false;
+    std::atomic<float> m_gain_current = VOLUME_0DB;   // decibels
+    std::atomic<float> m_gain_desired = VOLUME_0DB;   // decibels
+    std::atomic_bool m_muted = false;
 };
