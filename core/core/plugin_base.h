@@ -144,7 +144,7 @@ public:
 	void onComplainListEvent(uint64 serverConnectionHandlerID, uint64 targetClientDatabaseID, const char* targetClientNickName, uint64 fromClientDatabaseID, const char* fromClientNickName, const char* complainReason, uint64 timestamp);
 	void onBanListEvent(uint64 serverConnectionHandlerID, uint64 banid, const char* ip, const char* name, const char* uid, uint64 creationTime, uint64 durationTime, const char* invokerName, uint64 invokercldbid, const char* invokeruid, const char* reason, int numberOfEnforcements, const char* lastNickName);
 	void onClientServerQueryLoginPasswordEvent(uint64 serverConnectionHandlerID, const char* loginPassword);*/
-	virtual void on_plugin_command(uint64 sch_id, const char* plugin_name, const char* plugin_command) {};
+	virtual void on_plugin_command(uint64 sch_id, const char* plugin_name, const char* plugin_command, anyID invoker_client_id, const char* invoker_name, const char* invoker_uid) {};
 	/*void onIncomingClientQueryEvent(uint64 serverConnectionHandlerID, const char* commandText);
 	void onServerTemporaryPasswordListEvent(uint64 serverConnectionHandlerID, const char* clientNickname, const char* uniqueClientIdentifier, const char* description, const char* password, uint64 timestampStart, uint64 timestampEnd, uint64 targetChannelID, const char* targetChannelPW);*/
 
