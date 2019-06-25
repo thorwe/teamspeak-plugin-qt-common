@@ -3,6 +3,8 @@
 #include <QtCore/QObject>
 #include "teamspeak/public_definitions.h"
 
+#include <atomic>
+
 class Module : public QObject
 {
     Q_OBJECT
@@ -44,6 +46,6 @@ protected:
     bool m_isPrintEnabled;
 
 private:
-    bool m_enabled;
-    bool m_blocked;
+    std::atomic_bool m_enabled{ true };
+    std::atomic_bool m_blocked{ false };
 };

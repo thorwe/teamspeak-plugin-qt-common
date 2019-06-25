@@ -14,40 +14,40 @@
 
 bool Module::isEnabled() const
 {
-    return m_enabled;
+    return m_enabled.load();
 }
 
 bool Module::isBlocked() const
 {
-    return m_blocked;
+    return m_blocked.load();
 }
 
 bool Module::isRunning() const
 {
-    return (m_enabled && !m_blocked);
+    return (m_enabled.load() && !m_blocked.load());
 }
 
 
 void Module::setEnabled(bool value)
 {
-    if (value!=m_enabled)
+    if (value != m_enabled.load())
     {
         const auto kRunningOld = isRunning();
-        m_enabled = value;
+        m_enabled.store(value);
         onEnabledStateChanged(value);
         if (kRunningOld != isRunning())
             onRunningStateChanged(isRunning());
 
-        emit enabledSet(m_enabled);
+        emit enabledSet(value);
     }
 }
 
 void Module::setBlocked(bool value)
 {
-    if (value!=m_blocked)
+    if (value != m_blocked.load())
     {
         const auto kRunningOld = isRunning();
-        m_blocked = value;
+        m_blocked.store(value);
         onBlockedStateChanged(value);
         if (kRunningOld != isRunning())
             onRunningStateChanged(isRunning());

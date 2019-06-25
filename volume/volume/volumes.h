@@ -2,19 +2,17 @@
 
 #include "dsp_volume.h"
 
+#include "core/definitions.h"
 #include "core/client_storage.h"
 
 #include "teamspeak/public_definitions.h"
 #include "teamspeak/clientlib_publicdefinitions.h"
 
 #include <cstdint>
+#include <memory>
+#include <utility>
 
 namespace thorwe {
-
-    namespace ts {
-        using connection_id_t = uint64_t;
-        using client_id_t = uint16_t;
-    }
 
     namespace volume {
         template<typename T = DspVolume>

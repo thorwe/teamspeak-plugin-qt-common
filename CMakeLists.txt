@@ -11,6 +11,7 @@ link_libraries(Qt5::Core Qt5::Sql)
 include_directories(
     "${CMAKE_CURRENT_LIST_DIR}/ts3client-pluginsdk/include"
     "${CMAKE_CURRENT_LIST_DIR}/core"
+    "${CMAKE_CURRENT_LIST_DIR}/deps/gsl/include"
 )
 
 set (TS_QT_CORE

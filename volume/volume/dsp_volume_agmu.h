@@ -13,7 +13,7 @@ class DspVolumeAGMU : public DspVolume
 public:
     float fade_step(int32_t sample_count) override;
 
-    void process(int16_t* samples, int32_t sample_count, int32_t channels);
+    void process(int16_t* samples, int32_t sample_count, int32_t channels) override;
 
     int16_t peak() const { return m_peak.load(); };
     void set_peak(int16_t val) { m_peak.store(val); };    //Overwrite peak; use for reinitializations with cache values etc.
