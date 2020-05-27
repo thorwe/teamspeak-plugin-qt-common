@@ -228,17 +228,11 @@ void Plugin_Base::onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int 
 
 void Plugin_Base::onEditPlaybackVoiceDataEvent(uint64 serverConnectionHandlerID, anyID clientID, short * samples, int sampleCount, int channels)
 {
-	if (clientID > 32767)
-		clientID = 65535 - clientID + 1;
-
 	on_playback_pre_process(serverConnectionHandlerID, clientID, samples, sampleCount, channels);
 }
 
 void Plugin_Base::onEditPostProcessVoiceDataEvent(uint64 serverConnectionHandlerID, anyID clientID, short* samples, int sampleCount, int channels, const unsigned int* channelSpeakerArray, unsigned int* channelFillMask)
 {
-	if (clientID > 32767)
-		clientID = 65535 - clientID + 1;
-
 	on_playback_post_process(serverConnectionHandlerID, clientID, samples, sampleCount, channels, channelSpeakerArray, channelFillMask);
 }
 
