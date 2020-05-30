@@ -24,9 +24,9 @@ public:
     void set_duck_blocked(bool val) { m_is_duck_blocked.store(val); };
 
 private:
-    std::atomic<float> m_attack_rate = 120.0f;
-    std::atomic<float> m_decay_rate = 90.0f;
+    std::atomic<float> m_attack_rate{120.0f};
+    std::atomic<float> m_decay_rate ={90.0f};
 
-    std::atomic_bool m_gain_adjustment = false;
-    std::atomic_bool m_is_duck_blocked = false;
+    std::atomic_bool m_gain_adjustment{false};
+    std::atomic_bool m_is_duck_blocked{false};
 };

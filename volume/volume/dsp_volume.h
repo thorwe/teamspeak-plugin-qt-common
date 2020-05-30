@@ -1,9 +1,10 @@
 #pragma once
 
-constexpr float VOLUME_0DB = (0.0f);
-constexpr float VOLUME_MUTED = (-200.0f);
+constexpr const float VOLUME_0DB = (0.0f);
+constexpr const float VOLUME_MUTED = (-200.0f);
 
 #include <atomic>
+#include <cstdint>
 
 class DspVolume
 {
@@ -23,16 +24,16 @@ public:
     bool processing() const { return m_processing.load(); };
     virtual void set_processing(bool val) { m_processing.store(val); };
 
-    virtual void process(short* samples, int frame_count, int channels);
-    virtual float fade_step(int sample_count);
+    virtual void process(int16_t* samples, int32_t frame_count, int32_t channels);
+    virtual float fade_step(int32_t frame_count);
 
 protected:
-    void do_process(int16_t* samples, int32_t sample_count);
-    std::atomic_bool m_processing = false;
+    void do_process(int16_t* samples, int32_t frame_count);
+    std::atomic_bool m_processing{false};
     const uint16_t m_sample_rate = 48000;
 
 private:
-    std::atomic<float> m_gain_current = VOLUME_0DB;   // decibels
-    std::atomic<float> m_gain_desired = VOLUME_0DB;   // decibels
-    std::atomic_bool m_muted = false;
+    std::atomic<float> m_gain_current{VOLUME_0DB};   // decibels
+    std::atomic<float> m_gain_desired{VOLUME_0DB};   // decibels
+    std::atomic_bool m_muted{false};
 };
