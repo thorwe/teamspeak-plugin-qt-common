@@ -23,21 +23,23 @@ namespace thorwe {
             return { result.first->second.get(), result.second };
         }
 
-        void delete_item(ts::connection_id_t connection_id, ts::client_id_t client_id)
+        bool delete_item(ts::connection_id_t connection_id, ts::client_id_t client_id)
         {
-            auto connection_it = m_storage.find(connection_id);
-            if (connection_it == std::end(m_storage))
-                return;
 
-            auto&& client_map = connection_it->second;
-            auto client_it = client_map.find(client_id);
-            if (client_it != std::end(client_map))
+            if (auto connection_it = m_storage.find(connection_id); connection_it != std::end(m_storage))
             {
-                client_map.erase(client_it);
+                auto&& client_map = connection_it->second;
+                if (auto client_it = client_map.find(client_id); client_it != std::end(client_map))
+                {
+                    client_map.erase(client_it);
 
-                if (client_map.size() == 0)
-                    m_storage.erase(connection_it);
+                    if (client_map.size() == 0)
+                        m_storage.erase(connection_it);
+
+                    return true;
+                }
             }
+            return false;
         }
 
         void delete_items(ts::connection_id_t connection_id = 0)
@@ -72,12 +74,10 @@ namespace thorwe {
         auto do_for(U&& fn, ts::connection_id_t connection_id, ts::client_id_t client_id)
         {
             const auto& storage = m_storage;
-            auto connection_it = storage.find(connection_id);
-            if (connection_it != std::cend(storage))
+            if (auto connection_it = storage.find(connection_id); connection_it != std::cend(storage))
             {
                 const auto& clients_storage = connection_it->second;
-                auto clients_storage_it = clients_storage.find(client_id);
-                if (clients_storage_it != std::cend(clients_storage))
+                if (auto clients_storage_it = clients_storage.find(client_id); clients_storage_it != std::cend(clients_storage))
                     return fn(clients_storage_it->second.get());
             }
             return fn(nullptr);
@@ -97,8 +97,7 @@ namespace thorwe {
             else
             {
                 const auto& storage = m_storage;
-                auto connection_it = storage.find(connection_id);
-                if (connection_it != std::cend(storage))
+                if (auto connection_it = storage.find(connection_id); connection_it != std::cend(storage))
                 {
                     for (const auto& client : connection_it->second)
                         fn(client.second.get());
@@ -123,10 +122,10 @@ namespace thorwe {
             std::unique_lock<decltype(m_mutex)> lock(m_mutex);
             return m_storage.add_item(connection_id, client_id, std::move(item));
         }
-        void delete_item(ts::connection_id_t connection_id, ts::client_id_t client_id)
+        bool delete_item(ts::connection_id_t connection_id, ts::client_id_t client_id)
         {
             std::unique_lock<decltype(m_mutex)> lock(m_mutex);
-            m_storage.delete_item(connection_id, client_id);
+            return m_storage.delete_item(connection_id, client_id);
         }
         void delete_items(ts::connection_id_t connection_id = 0)
         {
