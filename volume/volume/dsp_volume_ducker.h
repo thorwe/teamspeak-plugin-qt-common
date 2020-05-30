@@ -4,7 +4,7 @@
 
 #include <atomic>
 
-class DspVolumeDucker : public DspVolume
+class DspVolumeDucker final : public DspVolume
 {
 
 public:

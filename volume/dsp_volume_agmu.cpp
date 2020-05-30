@@ -14,19 +14,20 @@ namespace {
     }
 }
 
-void DspVolumeAGMU::process(int16_t* samples, int32_t sample_count, int32_t channels)
+void DspVolumeAGMU::process(gsl::span<int16_t> samples, int32_t channels)
 {
     const auto old_peak = m_peak.load();
-    sample_count = sample_count * channels;
-    auto peak = getPeak(samples, sample_count);
+    const auto sample_count = samples.size();
+    const auto frame_count = sample_count / channels;
+    auto peak = getPeak(samples.data(), sample_count);
     peak = std::max(old_peak, peak);
     if (peak != old_peak)
     {
         m_peak.store(peak);
         set_gain_desired(compute_gain_desired(peak));
     }
-    set_gain_current(fade_step(sample_count));
-    do_process(samples, sample_count);
+    set_gain_current(fade_step(frame_count));
+    do_process(samples);
 }
 
 // Compute gain change

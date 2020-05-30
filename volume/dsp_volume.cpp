@@ -7,10 +7,11 @@
 
 const float GAIN_FADE_RATE = (400.0f);	// Rate to fade at (dB per second)
 
-void DspVolume::process(int16_t *samples, int32_t frame_count, int32_t channels)
+void DspVolume::process(gsl::span<int16_t> samples, int32_t channels)
 {
+    const auto frame_count = samples.size() / channels;
     set_gain_current(fade_step(frame_count));
-    do_process(samples, frame_count * channels);
+    do_process(samples);
 }
 
 float DspVolume::fade_step(int32_t frame_count)
@@ -41,11 +42,12 @@ float DspVolume::fade_step(int32_t frame_count)
     return current_gain;
 }
 
-//! Apply volume (no need to care for channels)
-void DspVolume::do_process(short *samples, int frame_count)
+//! Apply volume (no need to care for channels as we're lazily not changing gain within a buffer)
+void DspVolume::do_process(gsl::span<int16_t> samples)
 {
     const auto mix_gain = static_cast<float>(db2lin_alt2(gain_current()));
-    for (auto i = decltype(frame_count){0}; i < frame_count; ++i)
+    const auto samples_size = samples.size();
+    for (auto i = decltype(samples_size){0}; i < samples_size; ++i)
     {
         const auto temp = lround(samples[i] * mix_gain);
         if (temp < std::numeric_limits<int16_t>::min())
