@@ -2,14 +2,12 @@
 
 #include "dsp_volume.h"
 
-#include <atomic>
-
 class DspVolumeDucker final : public DspVolume
 {
 
 public:
     void set_processing(bool val) override;
-    float fade_step(int sample_count) override;
+    float fade_step(size_t frame_count) override;
 
     float attack_rate() const { return m_attack_rate.load(); };
     void set_attack_rate(float val) { m_attack_rate.store(val); };

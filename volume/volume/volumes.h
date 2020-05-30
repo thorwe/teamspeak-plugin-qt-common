@@ -16,7 +16,7 @@ namespace thorwe {
 
     namespace volume {
         template<typename T = DspVolume>
-        class Volumes : public Safe_Client_Storage<T> {
+        class Volumes final : public Safe_Client_Storage<T> {
         
         public:
             std::pair<T*, bool> add_volume(ts::connection_id_t connection_id, ts::client_id_t client_id) { return add_item(connection_id, client_id, std::make_unique<T>()); }

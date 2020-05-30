@@ -27,7 +27,7 @@ public:
     virtual void set_processing(bool val) { m_processing.store(val); };
 
     virtual void process(gsl::span<int16_t> samples, int32_t channels);
-    virtual float fade_step(int32_t frame_count);
+    virtual float fade_step(size_t frame_count);
 
 protected:
     void do_process(gsl::span<int16_t> samples);

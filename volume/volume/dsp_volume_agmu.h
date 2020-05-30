@@ -8,7 +8,7 @@ class DspVolumeAGMU final : public DspVolume
 {
 
 public:
-    float fade_step(int32_t sample_count) override;
+    float fade_step(size_t frame_count) override;
 
     void process(gsl::span<int16_t> samples, int32_t channels) override;
 

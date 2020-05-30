@@ -17,7 +17,7 @@ void DspVolumeDucker::set_processing(bool val)
 
 
 // virtual funcs
-float DspVolumeDucker::fade_step(int sample_count)
+float DspVolumeDucker::fade_step(size_t frame_count)
 {
     // compute ducker gain
     float current_gain = gain_current();
@@ -31,8 +31,8 @@ float DspVolumeDucker::fade_step(int sample_count)
         if (gain_adjustment && (current_gain != desired_gain))   // is attacking / adjusting
         {
             const auto attack_rate = m_attack_rate.load();
-            float fade_step_down = (attack_rate / m_sample_rate) * sample_count;
-            float fade_step_up = (decay_rate / m_sample_rate) * sample_count;
+            float fade_step_down = (attack_rate / m_sample_rate) * frame_count;
+            float fade_step_up = (decay_rate / m_sample_rate) * frame_count;
             if (current_gain < desired_gain - fade_step_up)
                 current_gain += fade_step_up;
             else if (current_gain > desired_gain + fade_step_down)
@@ -42,7 +42,7 @@ float DspVolumeDucker::fade_step(int sample_count)
         }
         else if ((!gain_adjustment) && (current_gain != VOLUME_0DB))    // is releasing
         {
-            float fade_step = (decay_rate / m_sample_rate) * sample_count;
+            float fade_step = (decay_rate / m_sample_rate) * frame_count;
             if (current_gain < VOLUME_0DB - fade_step)
                 current_gain += fade_step;
             else if (current_gain > VOLUME_0DB + fade_step)

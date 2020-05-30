@@ -31,14 +31,14 @@ void DspVolumeAGMU::process(gsl::span<int16_t> samples, int32_t channels)
 }
 
 // Compute gain change
-float DspVolumeAGMU::fade_step(int32_t sample_count)
+float DspVolumeAGMU::fade_step(size_t frame_count)
 {
     auto current_gain = gain_current();
     auto desired_gain = gain_desired();
     if (current_gain != desired_gain)
     {
-        float fade_step_down = (kRateQuieter / m_sample_rate) * sample_count;
-        float fade_step_up = (kRateLouder / m_sample_rate) * sample_count;
+        float fade_step_down = (kRateQuieter / m_sample_rate) * frame_count;
+        float fade_step_up = (kRateLouder / m_sample_rate) * frame_count;
         if (current_gain < desired_gain - fade_step_up)
             current_gain += fade_step_up;
         else if (current_gain > desired_gain + fade_step_down)
