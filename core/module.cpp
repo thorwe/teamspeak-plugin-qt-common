@@ -7,76 +7,32 @@
 
 #include "core/ts_logging_qt.h"
 
-//Module::Module(QObject *parent) :
-//    QObject(parent)
-//{
-//}
-
-bool Module::isEnabled() const
-{
-    return m_enabled.load();
-}
-
-bool Module::isBlocked() const
-{
-    return m_blocked.load();
-}
-
-bool Module::isRunning() const
+bool Module::running() const
 {
     return (m_enabled.load() && !m_blocked.load());
 }
 
 
-void Module::setEnabled(bool value)
+void Module::set_enabled(bool value)
 {
     if (value != m_enabled.load())
     {
-        const auto kRunningOld = isRunning();
+        const auto running_old = running();
         m_enabled.store(value);
-        onEnabledStateChanged(value);
-        if (kRunningOld != isRunning())
-            onRunningStateChanged(isRunning());
-
-        emit enabledSet(value);
+        on_enabled_changed(value);
+        if (running_old != running())
+            on_running_changed(running());
     }
 }
 
-void Module::setBlocked(bool value)
+void Module::set_blocked(bool value)
 {
     if (value != m_blocked.load())
     {
-        const auto kRunningOld = isRunning();
+        const auto running_old = running();
         m_blocked.store(value);
-        onBlockedStateChanged(value);
-        if (kRunningOld != isRunning())
-            onRunningStateChanged(isRunning());
-
-        emit blockedSet(value);
+        on_blocked_changed(value);
+        if (running_old != running())
+            on_running_changed(running());
     }
-}
-
-void Module::Print(QString message, uint64 serverConnectionHandlerID, LogLevel logLevel)
-{
-#ifndef CONSOLE_OUTPUT
-    Q_UNUSED(message);
-    Q_UNUSED(serverConnectionHandlerID);
-    Q_UNUSED(logLevel);
-#else
-    if (!m_isPrintEnabled)
-        return;
-
-    TSLogging::Print((this->objectName() + ": " + message), serverConnectionHandlerID, logLevel);
-#endif
-}
-
-void Module::Log(QString message, uint64 serverConnectionHandlerID, LogLevel logLevel)
-{
-    TSLogging::Log((this->objectName() + ": " + message),serverConnectionHandlerID,logLevel);
-    Print(message, serverConnectionHandlerID, logLevel);
-}
-
-void Module::Error(QString message, uint64 serverConnectionHandlerID, unsigned int error)
-{
-    TSLogging::Error((this->objectName() + ": " + message), serverConnectionHandlerID, error);
 }
