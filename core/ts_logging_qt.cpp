@@ -6,6 +6,7 @@
 #include "ts3_functions.h"
 #include "plugin.h"
 
+#include "core/ts_helpers_qt.h"
 #include "core/ts_settings_qt.h"
 
 bool TSLogging::GetErrorSound(QString &in)
@@ -14,9 +15,7 @@ bool TSLogging::GetErrorSound(QString &in)
     if (TSSettings::instance()->GetSoundPack(pack))
     {
         // Find the path to the soundpack
-        char path[PATH_BUFSIZE];
-        ts3Functions.getResourcesPath(path, PATH_BUFSIZE);
-        QString path_qstr(path);
+        QString path_qstr = TSHelpers::GetResourcesPath();
         path_qstr.append("sound/" + pack);
 
         QSettings cfg(path_qstr + "/settings.ini", QSettings::IniFormat);
@@ -42,9 +41,7 @@ bool TSLogging::GetInfoIcon(QString &in)
     if (TSSettings::instance()->GetIconPack(pack))
     {
         // Find the path to the skin
-        char path[PATH_BUFSIZE];
-        ts3Functions.getResourcesPath(path, PATH_BUFSIZE);
-        QString path_qstr(path);
+        QString path_qstr = TSHelpers::GetResourcesPath();
         in = (path_qstr + "gfx/" + pack + "/16x16_message_info.png");
         return true;
     }

@@ -1,9 +1,5 @@
 #pragma once
 
-#ifndef PATH_BUFSIZE
-#define PATH_BUFSIZE 512
-#endif
-
 #include <QtCore/QString>
 
 #include "teamspeak/public_definitions.h"

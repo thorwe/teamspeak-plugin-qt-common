@@ -1,9 +1,5 @@
 #pragma once
 
-#ifndef PATH_BUFSIZE
-#define PATH_BUFSIZE 512
-#endif
-
 #include <QtCore/QString>
 #include <QtWidgets/QWidget>
 #include <QtCore/QDir>
@@ -14,6 +10,7 @@
 namespace TSHelpers
 {
     QString GetConfigPath();
+    QString GetResourcesPath();
     QString GetFullConfigPath();
 
     QString GetLanguage();

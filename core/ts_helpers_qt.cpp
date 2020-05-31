@@ -17,12 +17,21 @@
 
 namespace TSHelpers
 {
+    constexpr const int32_t kPathBufferSize = 512;
+
     QString GetConfigPath()
     {
         // Find config path for config class
-        char* configPath = (char*)malloc(PATH_BUFSIZE);
-        ts3Functions.getConfigPath(configPath, PATH_BUFSIZE);
+        char* configPath = (char*)malloc(kPathBufferSize);
+        ts3Functions.getConfigPath(configPath, kPathBufferSize);
         return configPath;
+    }
+
+    QString GetResourcesPath()
+    {
+        char path[kPathBufferSize];
+        ts3Functions.getResourcesPath(path, kPathBufferSize);
+        return path;
     }
 
     QString GetFullConfigPath()
