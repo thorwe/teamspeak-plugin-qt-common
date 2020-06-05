@@ -22,21 +22,17 @@ TSServerInfo* TSServersInfo::get_server_info(uint64 server_connection_id, bool c
         }
         return kServerInfo.data();
     }
-    else
+
+    if (create_on_not_exist)
     {
-        if (create_on_not_exist)
-        {
-            auto server_info = new TSServerInfo(this, server_connection_id);
-            m_server_infos.insert(server_connection_id, server_info);
-            connect(server_info, &TSServerInfo::serverGroupListUpdated, this, &TSServersInfo::serverGroupListUpdated, Qt::UniqueConnection);
-            return server_info;
-        }
-        else
-        {
-            TSLogging::Error("(TSServersInfo::get_server_info): server_connection_id not found.");
-            return nullptr;
-        }
+        auto server_info = new TSServerInfo(this, server_connection_id);
+        m_server_infos.insert(server_connection_id, server_info);
+        connect(server_info, &TSServerInfo::serverGroupListUpdated, this, &TSServersInfo::serverGroupListUpdated, Qt::UniqueConnection);
+        return server_info;
     }
+
+    TSLogging::Error("(TSServersInfo::get_server_info): server_connection_id not found.");
+    return nullptr;
 }
 
 uint64 TSServersInfo::find_server_by_unique_id(QString server_id)

@@ -28,7 +28,7 @@ float FaderVertical::getValue() const
  */
 void FaderVertical::onSliderValueChanged(int val)
 {
-    double d_val = static_cast< double >(MMtoDB(static_cast< float >(val/100.)));
+    auto d_val = static_cast<double>(MMtoDB(static_cast< float >(val/100.)));
     d_val -= 10.0;
     d_val = d_val < -200.0 ? -200.0 : d_val;
     ui->doubleSpinBox->setValue(d_val);

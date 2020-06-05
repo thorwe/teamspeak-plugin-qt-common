@@ -37,8 +37,8 @@ public:
     QString GetChannelGroupName(uint64 id) const;
 
 signals:
-    void serverGroupListUpdated(uint64 server_connection_id, QMap<uint64, QString>);
-    void channelGroupListUpdated(uint64 server_connection_id, QMap<uint64, QString>);
+    void serverGroupListUpdated(uint64 connection_id, QMap<uint64, QString>);
+    void channelGroupListUpdated(uint64 connection_id, QMap<uint64, QString>);
 
 private:
     uint64 m_server_connection_id;

@@ -1,13 +1,12 @@
 #include "core/ts_context_menu_qt.h"
 
-#include <assert.h>
-
-#include <QtCore/QPointer>
-
 #include "plugin_definitions.h"
 #include "core/plugin_base.h"
 #include "core/ts_logging_qt.h"
-#include "core/plugin_base.h"
+
+#include <QtCore/QPointer>
+
+#include <cassert>
 
 /* Helper function to create a menu item */
 static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, const char* text, const char* icon)

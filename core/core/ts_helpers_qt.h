@@ -1,17 +1,22 @@
 #pragma once
 
-#include <QtCore/QString>
-#include <QtWidgets/QWidget>
-#include <QtCore/QDir>
+#include "core/plugin_helpers.h"
 
 #include "teamspeak/public_definitions.h"
 #include "plugin_definitions.h"
 
+#include <QtCore/QString>
+#include <QtWidgets/QWidget>
+#include <QtCore/QDir>
+
+#include <filesystem>
+
 namespace TSHelpers
 {
-    QString GetConfigPath();
-    QString GetResourcesPath();
-    QString GetFullConfigPath();
+    std::filesystem::path PathFromQString(const QString & path);
+    QString QStringFromPath(const std::filesystem::path & path);
+
+    QString GetPath(teamspeak::plugin::Path);
 
     QString GetLanguage();
 

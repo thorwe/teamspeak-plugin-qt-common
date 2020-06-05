@@ -11,32 +11,42 @@
 
 #include <QtWidgets/QApplication>
 
-#ifndef RETURNCODE_BUFSIZE
+/*#ifndef RETURNCODE_BUFSIZE
 #define RETURNCODE_BUFSIZE 128
-#endif
+#endif*/
 
 namespace TSHelpers
 {
-    constexpr const int32_t kPathBufferSize = 512;
 
-    QString GetConfigPath()
+    std::filesystem::path PathFromQString(const QString & path)
     {
-        // Find config path for config class
-        char* configPath = (char*)malloc(kPathBufferSize);
-        ts3Functions.getConfigPath(configPath, kPathBufferSize);
-        return configPath;
+
+    #ifdef _WIN32
+        auto * wptr = reinterpret_cast<const wchar_t*>(path.utf16());
+        return std::filesystem::path(wptr, wptr + path.size());
+    #else
+        return std::filesystem::path(path.toStdString());
+    #endif
     }
 
-    QString GetResourcesPath()
+    QString QStringFromPath(const std::filesystem::path & path)
     {
-        char path[kPathBufferSize];
-        ts3Functions.getResourcesPath(path, kPathBufferSize);
-        return path;
+    #ifdef _WIN32
+        return QString::fromStdWString(path.generic_wstring());
+    #else
+        return QString::fromStdString(path.native());
+    #endif
+    }
+
+    QString GetPath(teamspeak::plugin::Path path)
+    {
+        const auto path_ = teamspeak::plugin::get_path(path);
+        return QStringFromPath(path_);
     }
 
     QString GetFullConfigPath()
     {
-        auto fullPath=GetConfigPath();
+        auto fullPath=GetPath(teamspeak::plugin::Path::Config);
         fullPath.append(QString(ts3plugin_name()).toLower().replace(" ", ""));
         fullPath.append("_plugin.ini");
         return fullPath;
@@ -577,7 +587,7 @@ namespace TSHelpers
     bool GetCreatePluginConfigFolder(QDir &result)
     {
         auto isPathOk = true;
-        auto path = TSHelpers::GetConfigPath();
+        auto path = TSHelpers::GetPath(teamspeak::plugin::Path::Config);
         QDir dir(path);
         if (!dir.exists())
         {

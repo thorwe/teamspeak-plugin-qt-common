@@ -60,7 +60,7 @@ public:
 
 private:
     //singleton
-    explicit TSSettings();
+    TSSettings() = default;
     ~TSSettings() = default;
     static TSSettings* m_Instance;
     TSSettings(const TSSettings &);

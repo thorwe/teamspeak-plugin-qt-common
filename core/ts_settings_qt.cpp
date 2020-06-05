@@ -3,16 +3,14 @@
 
 #include "plugin.h"
 
-TSSettings* TSSettings::m_Instance = 0;
-
-TSSettings::TSSettings(){}
+TSSettings* TSSettings::m_Instance = nullptr;
 
 void TSSettings::Init(QString tsConfigPath)
 {
-    const auto kName = QString(ts3plugin_name()).simplified().append("_SetDbConn");
-    m_SettingsDb = QSqlDatabase::addDatabase("QSQLITE", kName);
+    const auto name = QString(ts3plugin_name()).simplified().append("_SetDbConn");
+    m_SettingsDb = QSqlDatabase::addDatabase("QSQLITE", name);
     m_SettingsDb.setDatabaseName(tsConfigPath + "settings.db");
-    if (!QFile::exists(m_SettingsDb.database(kName).databaseName()))
+    if (!QFile::exists(m_SettingsDb.database(name).databaseName()))
         TSLogging::Log(QString("Couldn't open settings.db: %1 does not exist.").arg(m_SettingsDb.database().databaseName()));
 
     if (!m_SettingsDb.isValid())
@@ -46,7 +44,7 @@ bool TSSettings::GetSoundPack(QString &result)
  */
 bool TSSettings::GetIconPack(QString &result)
 {
-    if (!(GetValueFromQuery("SELECT value FROM Application WHERE key='IconPack'", result,false)))
+    if (!(GetValueFromQuery("SELECT value FROM Application WHERE key='IconPack'", result, false)))
     {
         error_qsql.setDriverText(error_qsql.driverText().prepend("(GetIconPack) "));
         return false;
@@ -62,7 +60,7 @@ bool TSSettings::GetIconPack(QString &result)
  */
 bool TSSettings::GetDefaultCaptureProfile(QString &result)
 {
-    if (!(GetValueFromQuery("SELECT value FROM Profiles WHERE key='DefaultCaptureProfile'", result,false)))
+    if (!(GetValueFromQuery("SELECT value FROM Profiles WHERE key='DefaultCaptureProfile'", result, false)))
     {
         error_qsql.setDriverText(error_qsql.driverText().prepend("(GetDefaultCaptureProfile) "));
         return false;
@@ -80,7 +78,7 @@ bool TSSettings::GetDefaultCaptureProfile(QString &result)
 bool TSSettings::GetPreProcessorData(QString profile, QString &result)
 {
     QString query("SELECT value FROM Profiles WHERE key='Capture/" + profile + "/PreProcessing'");
-    if (!(GetValueFromQuery(query, result,false)))
+    if (!(GetValueFromQuery(query, result, false)))
     {
         error_qsql.setDriverText(error_qsql.driverText().prepend("(GetPreProcessorData) "));
         return false;
@@ -119,9 +117,9 @@ bool TSSettings::GetBookmarkByServerUID(QString sUID, QMap<QString, QString> &re
         return false;
 
     sUID.prepend("ServerUID=");
-    for (int i = 0;i<bookmarks.count();++i)
+    for (int i = 0; i < bookmarks.size(); ++i)
     {
-        auto bookmark = bookmarks.at(i);
+        const auto& bookmark = bookmarks.at(i);
         if (bookmark.contains(sUID))
         {
             result = GetMapFromValue(bookmark);
@@ -233,8 +231,8 @@ QMap<QString, QString> TSSettings::GetMapFromValue(QString value)
     auto qstrl_value = value.split(QRegExp("[\r\n]"),QString::SkipEmptyParts);
     for (int i = 0;i<qstrl_value.count();++i)
     {
-        auto qs_val = qstrl_value.at(i);
-        result.insert(qs_val.section("=",0,0),qs_val.section("=",1));
+        const auto& qs_val = qstrl_value.at(i);
+        result.insert(qs_val.section("=", 0, 0), qs_val.section("=", 1));
     }
     return result;
 }
@@ -313,14 +311,14 @@ bool TSSettings::GetValueFromQuery(QString query, QString &result, bool isEmptyV
                 return false;
             }
             QString qstr(q_query.value(0).toString());
-            if (qstr.isEmpty() != true)
+            if (!qstr.isEmpty())
             {
                 result = qstr;
                 found = true;
                 break;
             }
         }
-        if (found != true)
+        if (!found)
         {
             if(isEmptyValid)
             {
@@ -391,7 +389,7 @@ bool TSSettings::GetValuesFromQuery(QString query, QStringList &result) //proper
                 return false;
             }
             QString qstr(q_query.value(0).toString());
-            if (qstr.isEmpty() != true)
+            if (!qstr.isEmpty())
                 result.append(qstr);
         }
         return true;

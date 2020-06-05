@@ -5,7 +5,7 @@
 #include <cmath>
 #include <limits>
 
-const float GAIN_FADE_RATE = (400.0f);	// Rate to fade at (dB per second)
+const float GAIN_FADE_RATE = (400.0F);	// Rate to fade at (dB per second)
 
 void DspVolume::process(gsl::span<int16_t> samples, int32_t channels)
 {

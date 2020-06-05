@@ -42,7 +42,7 @@ signals:
 
 private:
     uint64 m_meTalkingScHandler = 0;
-    bool m_meTalkingIsWhisper;
+    bool m_meTalkingIsWhisper{ false };
 
     QMultiMap<uint64, anyID> TalkerMap;
     QMultiMap<uint64, anyID> WhisperMap;

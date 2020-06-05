@@ -152,7 +152,7 @@ void TSInfoData::onInfoData(uint64 server_connection_id, uint64 id, enum PluginI
     QTextStream data_stream(&outstr);
     for (auto it = m_callbacks.constBegin(); it != m_callbacks.constEnd(); ++it)
     {
-        auto cbk = it.value();
+        auto&& cbk = it.value();
         if (cbk)
         {
             auto i_info = qobject_cast<InfoDataInterface *>(cbk);
@@ -162,7 +162,7 @@ void TSInfoData::onInfoData(uint64 server_connection_id, uint64 id, enum PluginI
     }
 
     if (outstr.isEmpty())
-        data = NULL;
+        data = nullptr;
     else
     {
         *data = (char*)malloc(kInfoDataBufSize * sizeof(char));

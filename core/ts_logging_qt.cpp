@@ -15,12 +15,12 @@ bool TSLogging::GetErrorSound(QString &in)
     if (TSSettings::instance()->GetSoundPack(pack))
     {
         // Find the path to the soundpack
-        QString path_qstr = TSHelpers::GetResourcesPath();
+        QString path_qstr = TSHelpers::GetPath(teamspeak::plugin::Path::Resources);
         path_qstr.append("sound/" + pack);
 
         QSettings cfg(path_qstr + "/settings.ini", QSettings::IniFormat);
         auto snd_qstr = cfg.value("soundfiles/SERVER_ERROR").toString();
-        if (snd_qstr.isEmpty() != true)
+        if (!snd_qstr.isEmpty())
         {
             // towatch: QSettings insists on eliminating the double quotas '\"' on read
             // no, I won't spend one more minute creating a regexp that fits for a fragging error sound that should be available via the api.
@@ -41,7 +41,7 @@ bool TSLogging::GetInfoIcon(QString &in)
     if (TSSettings::instance()->GetIconPack(pack))
     {
         // Find the path to the skin
-        QString path_qstr = TSHelpers::GetResourcesPath();
+        QString path_qstr = TSHelpers::GetPath(teamspeak::plugin::Path::Resources);
         in = (path_qstr + "gfx/" + pack + "/16x16_message_info.png");
         return true;
     }
@@ -60,7 +60,7 @@ void TSLogging::PlayErrorSound(uint64 serverConnectionHandlerID)
         Log(("TSLogging::PlayErrorSound:" + TSSettings::instance()->GetLastError().text()), LogLevel_WARNING);
     else
     {
-        if((errorSound.isEmpty()) != true)
+        if(!errorSound.isEmpty())
         {
             unsigned int error;
             // Play the error sound

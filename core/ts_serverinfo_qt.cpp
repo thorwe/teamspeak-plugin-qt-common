@@ -75,25 +75,22 @@ QString TSServerInfo::GetServerGroupName(uint64 id) const
 
 uint64 TSServerInfo::GetChannelGroupId(QString name) const
 {
-    auto list = m_channel_groups.keys(name);
-    auto elementCount = list.size();
-    if (elementCount == 0)
-        return (uint64)NULL;
-    else if (elementCount == 1)
-        return list.at(0);
-    else
-    {
-        uint64 highest = 0;
-        for (int i = 0; i < elementCount; ++i)
-        {
-            uint64 e_key = list.at(i);
-            if (e_key > highest)
-                highest = e_key;
-        }
-        return highest;
-    }
+    const auto list = m_channel_groups.keys(name);
+    const auto element_count = list.size();
+    if (element_count == 0)
+        return 0;
 
-    //return (m_ChannelGroups.key(name,(uint64)NULL));
+    if (element_count == 1)
+        return list.at(0);
+
+    uint64 highest = 0;
+    for (int i = 0; i < element_count; ++i)
+    {
+        uint64 e_key = list.at(i);
+        if (e_key > highest)
+            highest = e_key;
+    }
+    return highest;
 }
 
 QString TSServerInfo::GetChannelGroupName(uint64 id) const

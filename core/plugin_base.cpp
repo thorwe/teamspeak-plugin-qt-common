@@ -61,7 +61,7 @@ int Plugin_Base::init()
 	freopen("CONOUT$", "wb", stdout);   //Makes printf work in Release mode (shouldn't been necessary, but is...)
 #endif
 
-	TSSettings::instance()->Init(TSHelpers::GetConfigPath());
+    TSSettings::instance()->Init(TSHelpers::GetPath(teamspeak::plugin::Path::Config));
 
 	// load sqlite driver if necessary
 	if (QSqlDatabase::connectionNames().isEmpty())
@@ -70,7 +70,7 @@ int Plugin_Base::init()
 		QSqlDatabase db;
 
 		db = QSqlDatabase::addDatabase("QSQLITE");
-		db.setDatabaseName(TSHelpers::GetConfigPath() + "settings.db");
+        db.setDatabaseName(TSHelpers::GetPath(teamspeak::plugin::Path::Config) + "settings.db");
 
 		if (db.isValid())
 			TSLogging::Log("Database is valid.");
@@ -210,7 +210,7 @@ void Plugin_Base::onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, any
 {
 	const auto kMyId = my_id_move_event(serverConnectionHandlerID, clientID, newChannelID, visibility);
 	if (kMyId)
-		on_client_move_timeout(serverConnectionHandlerID, clientID, newChannelID, kMyId, timeoutMessage);
+        on_client_move_timeout(serverConnectionHandlerID, clientID, oldChannelID, kMyId, timeoutMessage);
 }
 
 void Plugin_Base::onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID moverID, const char * moverName, const char * moverUniqueIdentifier, const char * moveMessage)
@@ -263,10 +263,13 @@ void Plugin_Base::onMenuItemEvent(uint64 serverConnectionHandlerID, PluginMenuTy
 
 anyID Plugin_Base::my_id_move_event(uint64 sch_id, anyID client_id, uint64 new_channel_id, int visibility)
 {
-	unsigned int error;
-	if (new_channel_id == 0)  // When we disconnect, we get moved to chan 0 before the connection event
-	{                       // However, we aren't able to get our own id etc. anymore via the API for comparison
-		int con_status;     // Therefor, unless we cache our ids for no other benefit, this is a workaround by filtering those out
+    unsigned int error = ERROR_ok;
+    if (new_channel_id == 0)
+    {
+        // When we disconnect, we get moved to chan 0 before the connection event
+        // However, we aren't able to get our own id etc. anymore via the API for comparison
+        // Therefor, unless we cache our ids for no other benefit, this is a workaround by filtering those out
+        int con_status = STATUS_DISCONNECTED;
 		if ((error = ts3Functions.getConnectionStatus(sch_id, &con_status)) != ERROR_ok)
 		{
 			TSLogging::Error("(filter_move_event)", sch_id, error);
@@ -275,11 +278,11 @@ anyID Plugin_Base::my_id_move_event(uint64 sch_id, anyID client_id, uint64 new_c
 		if (con_status == STATUS_DISCONNECTED)
 			return 0;
 	}
-	else if ((visibility != LEAVE_VISIBILITY) && (TSHelpers::IsClientQuery(sch_id, client_id)))
+    else if ((visibility != LEAVE_VISIBILITY) && (TSHelpers::IsClientQuery(sch_id, client_id)))
 		return 0;
 
 	// Get My Id on this handler
-	anyID my_id;
+    anyID my_id = 0;
 	if ((error = ts3Functions.getClientID(sch_id, &my_id)) != ERROR_ok)
 	{
 		TSLogging::Error("(ts3plugin_onClientMoveEvent)", sch_id, error);
