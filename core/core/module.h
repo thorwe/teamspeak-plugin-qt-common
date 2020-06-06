@@ -44,6 +44,6 @@ protected:
     bool m_isPrintEnabled;
 
 private:
-    bool m_enabled;
-    bool m_blocked;
+    bool m_enabled{false};
+    bool m_blocked{false};
 };
