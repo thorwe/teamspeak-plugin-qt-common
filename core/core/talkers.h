@@ -1,13 +1,13 @@
 #pragma once
 
-#include <QtCore/QObject>
-#include <QtCore/QMultiMap>
+#include "module.h"
 
 #include "teamspeak/public_definitions.h"
 
-#include <unordered_map>
+#include <QtCore/QMultiMap>
+#include <QtCore/QObject>
 
-#include "module.h"
+#include <unordered_map>
 
 class TalkInterface
 {
@@ -32,8 +32,8 @@ public:
     const QMultiMap<uint64, anyID>& GetWhisperMap() const;
     uint64 isMeTalking() const;
 
-    unsigned int RefreshTalkers(uint64 serverConnectionHandlerID);
-    unsigned int RefreshAllTalkers();
+    std::error_code RefreshTalkers(uint64 connection_id);
+    std::error_code RefreshAllTalkers();
 
     void DumpTalkStatusChanges(QObject* p, int status);
 

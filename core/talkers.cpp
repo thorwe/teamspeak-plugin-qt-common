@@ -1,83 +1,83 @@
 #include "core/talkers.h"
 
-#include "teamspeak/public_errors.h"
-#include "teamspeak/public_errors_rare.h"
+#include "core/ts_functions.h"
+
 #include "teamspeak/public_rare_definitions.h"
-#include "ts3_functions.h"
 
 #include "core/ts_logging_qt.h"
 
 #include "plugin.h"
 
+using namespace com::teamspeak::pluginsdk;
+
 Talkers::Talkers(QObject* parent)
 	: QObject(parent)
 {}
 
-unsigned int Talkers::RefreshTalkers(uint64 serverConnectionHandlerID)
+std::error_code Talkers::RefreshTalkers(uint64 connection_id)
 {
-    unsigned int error = ERROR_ok;
-    int status;
-    if ((error = ts3Functions.getConnectionStatus(serverConnectionHandlerID, &status)) != ERROR_ok)
-        return error;
+    const auto[error_connection_status, connection_status] = funcs::get_connection_status(connection_id);
+    if (ts_errc::ok != error_connection_status)
+        return error_connection_status;
 
-    if (status != STATUS_CONNECTION_ESTABLISHED)
-        return ERROR_ok;
+    if (connection_status != STATUS_CONNECTION_ESTABLISHED)
+        return ts_errc::ok;
 
-    anyID myID;
-    if ((error = ts3Functions.getClientID(serverConnectionHandlerID, &myID)) != ERROR_ok)
-        return error;
+    const auto[error_my_id, my_id] = funcs::get_client_id(connection_id);
+    if (ts_errc::ok != error_my_id)
+        return error_my_id;
 
-    int talking;
-    if ((error = ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_FLAG_TALKING, &talking)) != ERROR_ok)
-        return error;
+    const auto[error_my_talking_flag, my_talking_flag] = funcs::get_client_self_property_as_int(connection_id, CLIENT_FLAG_TALKING);
+    if (ts_errc::ok != error_my_talking_flag)
+        return error_my_talking_flag;
 
-    if (talking == STATUS_TALKING)
+
+    if (my_talking_flag == STATUS_TALKING)
     {
-        int isWhispering;
-        if ((error = ts3Functions.isWhispering(serverConnectionHandlerID, myID, &isWhispering)) != ERROR_ok)
-            return error;
+        const auto [error_is_whispering, is_whispering] = funcs::is_whispering(connection_id, my_id);
+        if (ts_errc::ok != error_is_whispering)
+            return error_is_whispering;
 
-        onTalkStatusChangeEvent(serverConnectionHandlerID, STATUS_TALKING, isWhispering, myID);
+        onTalkStatusChangeEvent(connection_id, STATUS_TALKING, is_whispering, my_id);
     }
 
     //Get all visible clients
-    anyID *clientList;
-    if ((error = ts3Functions.getClientList(serverConnectionHandlerID, &clientList)) != ERROR_ok)
-        return error;
+    const auto[error_client_ids, client_ids] = funcs::get_client_ids(connection_id);
+    if (ts_errc::ok != error_client_ids)
+        return error_client_ids;
 
-    for (int i=0; clientList[i]; ++i)
+    for (const auto client_id : client_ids)
     {
-        const auto kClientId = clientList[i];
-        if (ts3Functions.getClientVariableAsInt(serverConnectionHandlerID, kClientId, CLIENT_FLAG_TALKING, &talking) == ERROR_ok)
-        {
-            if (talking == STATUS_TALKING)
-            {
-                int isWhispering;
-                if ((error = ts3Functions.isWhispering(serverConnectionHandlerID, kClientId, &isWhispering)) != ERROR_ok)
-                    continue;
+        const auto [error_flag_talking, flag_talking] = funcs::get_client_property_as_int(connection_id, client_id, CLIENT_FLAG_TALKING);
+        if (ts_errc::ok != error_flag_talking)
+            continue;
 
-                onTalkStatusChangeEvent(serverConnectionHandlerID, STATUS_TALKING, isWhispering, kClientId);
-            }
+        if (STATUS_TALKING == flag_talking)
+        {
+            const auto [error_is_whispering, is_whispering] = funcs::is_whispering(connection_id, client_id);
+            if (ts_errc::ok != error_is_whispering)
+                continue;
+
+            onTalkStatusChangeEvent(connection_id, STATUS_TALKING, is_whispering, client_id);
         }
     }
-    ts3Functions.freeMemory(clientList);
-    return error;
+
+    return ts_errc::ok;
 }
 
-unsigned int Talkers::RefreshAllTalkers()  // I assume getClientVariableAsInt only returns whisperer to me as talking and isWhispering == isWhisperingMe
+std::error_code Talkers::RefreshAllTalkers()  // I assume getClientVariableAsInt only returns whisperer to me
+                                              // as talking and isWhispering == isWhisperingMe
 {
-    unsigned int error = ERROR_ok;
-    uint64* serverList;
-    if(ts3Functions.getServerConnectionHandlerList(&serverList) == ERROR_ok)
+    const auto[error_connection_ids, connection_ids] = funcs::get_server_connection_handler_ids();
+    if (ts_errc::ok != error_connection_ids)
+        return error_connection_ids;
+
+    for (const auto connection_id : connection_ids)
     {
-        for (int i=0; serverList[i] != NULL; ++i)
-        {
-            if ((error = RefreshTalkers(serverList[i])) != ERROR_ok)
-                break;
-        }
-        ts3Functions.freeMemory(serverList);
+        if (const auto error = RefreshTalkers(connection_id); ts_errc::ok != error)
+            return error;
     }
-    return error;
+    return ts_errc::ok;
 }
 
 void Talkers::DumpTalkStatusChanges(QObject *p, int status)
@@ -97,35 +97,30 @@ void Talkers::DumpTalkStatusChanges(QObject *p, int status)
 
     if (m_meTalkingScHandler != 0)
     {
-        unsigned int error;
-        // Get My Id on this handler
-        anyID myID;
-        if ((error = ts3Functions.getClientID(m_meTalkingScHandler,&myID)) != ERROR_ok)
+        const auto [error_my_id, my_id] = funcs::get_client_id(m_meTalkingScHandler);
+        if (ts_errc::ok != error_my_id)
         {
-            TSLogging::Error("DumpTalkStatusChanges", m_meTalkingScHandler, error);
+            TSLogging::Error("DumpTalkStatusChanges", m_meTalkingScHandler, error_my_id);
             return;
         }
-        iTalk->onTalkStatusChanged(m_meTalkingScHandler, status, m_meTalkingIsWhisper, myID, true);
+        iTalk->onTalkStatusChanged(m_meTalkingScHandler, status, m_meTalkingIsWhisper, my_id, true);
     }
 }
 
-bool Talkers::onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int status, int isReceivedWhisper, anyID clientID)
+bool Talkers::onTalkStatusChangeEvent(uint64 connection_id, int status, int isReceivedWhisper, anyID client_id)
 {
-    unsigned int error;
-
-    // Get My Id on this handler
-    anyID myID;
-    if ((error = ts3Functions.getClientID(serverConnectionHandlerID, &myID)) != ERROR_ok)
+    const auto [error_my_id, my_id] = funcs::get_client_id(connection_id);
+    if (ts_errc::ok != error_my_id)
     {
-        TSLogging::Error("onTalkStatusChangeEvent", serverConnectionHandlerID, error);
+        TSLogging::Error("onTalkStatusChangeEvent", connection_id, error_my_id);
         return false;
     }
 
-    if (clientID == myID)
+    if (my_id == client_id)
     {
         m_meTalkingIsWhisper = isReceivedWhisper;
         if (status == STATUS_TALKING)
-            m_meTalkingScHandler = serverConnectionHandlerID;
+            m_meTalkingScHandler = connection_id;
         else
             m_meTalkingScHandler = 0;
 
@@ -136,21 +131,21 @@ bool Talkers::onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int stat
     {
         if (isReceivedWhisper)
         {
-            if (!WhisperMap.contains(serverConnectionHandlerID,clientID))   // pure safety measurement
-                WhisperMap.insert(serverConnectionHandlerID,clientID);
+            if (!WhisperMap.contains(connection_id, client_id))   // pure safety measurement
+                WhisperMap.insert(connection_id, client_id);
         }
         else
         {
-            if (!TalkerMap.contains(serverConnectionHandlerID,clientID))
-                TalkerMap.insert(serverConnectionHandlerID,clientID);
+            if (!TalkerMap.contains(connection_id, client_id))
+                TalkerMap.insert(connection_id, client_id);
         }
     }
     else if (status == STATUS_NOT_TALKING)
     {
         if (isReceivedWhisper)
-            WhisperMap.remove(serverConnectionHandlerID,clientID);
+            WhisperMap.remove(connection_id, client_id);
         else
-            TalkerMap.remove(serverConnectionHandlerID,clientID);
+            TalkerMap.remove(connection_id,client_id);
     }
 
     return false;

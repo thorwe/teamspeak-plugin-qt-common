@@ -1,15 +1,14 @@
+#include "core/ts_infodata_qt.h"
+
+#include "core/ts_functions.h"
+#include "core/ts_logging_qt.h"
+
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
 
-#include "core/ts_infodata_qt.h"
-#include "teamspeak/public_errors.h"
-#include "teamspeak/public_errors_rare.h"
-#include "ts3_functions.h"
-#include "plugin.h"
-
-#include "core/ts_logging_qt.h"
-
 const int kInfoDataBufSize = 256;
+
+using namespace com::teamspeak::pluginsdk;
 
 TSInfoData::TSInfoData(QObject *parent)
 	: QObject(parent)
@@ -34,16 +33,16 @@ void TSInfoData::RequestUpdate(uint64 server_connection_id, uint64 id, enum Plug
     {
     case PLUGIN_CLIENT:
         if (m_info_id == id)
-            ts3Functions.requestInfoUpdate(server_connection_id, m_info_type, m_info_id);
+            funcs::request_info_update(server_connection_id, m_info_type, m_info_id);
 
         break;
     case PLUGIN_CHANNEL:
         if (m_info_id == id)
-            ts3Functions.requestInfoUpdate(server_connection_id, m_info_type, m_info_id);
+            funcs::request_info_update(server_connection_id, m_info_type, m_info_id);
 
         break;
     case PLUGIN_SERVER:
-        ts3Functions.requestInfoUpdate(server_connection_id, m_info_type, m_info_id);
+        funcs::request_info_update(server_connection_id, m_info_type, m_info_id);
         break;
     default:
         break;
@@ -52,21 +51,21 @@ void TSInfoData::RequestUpdate(uint64 server_connection_id, uint64 id, enum Plug
 
 void TSInfoData::RequestSelfUpdate()
 {
-    if (m_home_id != 0)
+    const auto home_id = m_home_id;
+    if (home_id != 0)
     {
-        unsigned int error;
-        int status;
-        if ((error = ts3Functions.getConnectionStatus(m_home_id, &status)) != ERROR_ok)
+        const auto [error_connection_status, connection_status] = funcs::get_connection_status(home_id);
+        if (ts_errc::ok != error_connection_status)
         {
-            TSLogging::Error("(TSInfoData::RequestSelfUpdate)", NULL, error, false);
+            TSLogging::Error("(TSInfoData::RequestSelfUpdate)", NULL, error_connection_status, false);
             return;
         }
 
 		// Get My Id on this handler
-        anyID my_id;
-        if((error = ts3Functions.getClientID(m_home_id, &my_id)) != ERROR_ok)
+        const auto[error_my_id, my_id] = funcs::get_client_id(home_id);
+        if (ts_errc::ok != error_my_id)
         {
-            TSLogging::Error("(TSInfoData::RequestSelfUpdate)", m_home_id, error);
+            TSLogging::Error("(TSInfoData::RequestSelfUpdate)", home_id, error_my_id);
             return;
         }
 
@@ -101,34 +100,31 @@ bool TSInfoData::Register(QObject *p, bool is_register, int priority)
     return true;
 }
 
-void TSInfoData::onInfoData(uint64 server_connection_id, uint64 id, enum PluginItemType type, char** data)
+void TSInfoData::onInfoData(uint64 connection_id, uint64 id, enum PluginItemType type, char** data)
 {
     // When disconnecting a server tab, an info update will be sent with this server_connection_id
     // That's rather not helpfull
-    unsigned int error;
-    int con_status;
-    if ((error = ts3Functions.getConnectionStatus(server_connection_id, &con_status)) != ERROR_ok)
+    const auto [error_connection_status, connection_status] = funcs::get_connection_status(connection_id);
+    if (ts_errc::ok != error_connection_status)
     {
-        TSLogging::Error("(TSInfoData::onInfoData)", server_connection_id, error);
+        TSLogging::Error("(TSInfoData::onInfoData)", connection_id, error_connection_status);
         return;
     }
-    if (con_status == STATUS_DISCONNECTED)
+    if (STATUS_DISCONNECTED == connection_status)
         return;
 
-    m_home_id = server_connection_id;
+    m_home_id = connection_id;
     m_info_type = type;
     m_info_id = id;
 
     uint64 mine = 0;
     if ((type == PLUGIN_CLIENT) || (type == PLUGIN_CHANNEL))
     {
-        unsigned int error;
-        // Get My Id on this handler
-        anyID my_id;
-        if((error = ts3Functions.getClientID(server_connection_id, &my_id)) != ERROR_ok)
+        const auto[error_my_id, my_id] = funcs::get_client_id(connection_id);
+        if (ts_errc::ok != error_my_id)
         {
-            if (error != ERROR_not_connected)
-                TSLogging::Error("(TSInfoData::onInfoData)", server_connection_id, error);
+            if (ts_errc::not_connected != error_my_id)
+                TSLogging::Error("(TSInfoData::onInfoData)", connection_id, error_my_id);
 
             return;
         }
@@ -137,14 +133,13 @@ void TSInfoData::onInfoData(uint64 server_connection_id, uint64 id, enum PluginI
             mine = static_cast<uint64>(my_id);
         else
         {
-            // Get My channel on this handler
-            uint64 channelID;
-            if ((error = ts3Functions.getChannelOfClient(server_connection_id, my_id, &channelID)) != ERROR_ok)
+            const auto [error_my_channel_id, my_channel_id] = funcs::get_channel_of_client(connection_id, my_id);
+            if (ts_errc::ok != error_my_channel_id)
             {
-                TSLogging::Error("(TSInfoData::onInfoData)", server_connection_id, error);
+                TSLogging::Error("(TSInfoData::onInfoData)", connection_id, error_my_channel_id);
                 return;
             }
-            mine = channelID;
+            mine = my_channel_id;
         }
     }
 
@@ -156,7 +151,7 @@ void TSInfoData::onInfoData(uint64 server_connection_id, uint64 id, enum PluginI
         if (cbk)
         {
             auto i_info = qobject_cast<InfoDataInterface *>(cbk);
-            if (i_info->onInfoDataChanged(server_connection_id, id, type, mine, data_stream))
+            if (i_info->onInfoDataChanged(connection_id, id, type, mine, data_stream))
                 data_stream << ".\n";
         }
     }

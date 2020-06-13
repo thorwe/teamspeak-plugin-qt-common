@@ -1,10 +1,13 @@
 #include "core/ts_serversinfo.h"
 
+#include "core/ts_functions.h"
 #include "core/ts_logging_qt.h"
-#include "teamspeak/public_errors.h"
-#include "teamspeak/clientlib_publicdefinitions.h"
-#include "ts3_functions.h"
+
 #include "plugin.h"
+
+#include "teamspeak/clientlib_publicdefinitions.h"
+
+using namespace com::teamspeak::pluginsdk;
 
 TSServersInfo::TSServersInfo(QObject* parent)
 	: QObject(parent)
@@ -35,23 +38,22 @@ TSServerInfo* TSServersInfo::get_server_info(uint64 server_connection_id, bool c
     return nullptr;
 }
 
-uint64 TSServersInfo::find_server_by_unique_id(QString server_id)
+uint64 TSServersInfo::find_server_by_unique_id(QString server_uid)
 {
     uint64 server_connection_id = 0;
     {
-        uint64* servers;
-        if (ts3Functions.getServerConnectionHandlerList(&servers) == ERROR_ok)
+        const auto [error_connection_ids, connection_ids] = funcs::get_server_connection_handler_ids();
+        if (ts_errc::ok == error_connection_ids)
         {
-            for (auto server = servers; *server; ++server)
+            for (auto connection_id : connection_ids)
             {
-                auto ts_server_info = get_server_info(*server, true);
-                if (ts_server_info && (server_id == ts_server_info->getUniqueId()))
+                auto ts_server_info = get_server_info(connection_id, true);
+                if (ts_server_info && (server_uid == ts_server_info->getUniqueId()))
                 {
-                    server_connection_id = ts_server_info->getServerConnectionHandlerID();
+                    server_connection_id = connection_id;
                     break;
                 }
             }
-            ts3Functions.freeMemory(servers);
         }
     }
     return server_connection_id;

@@ -1,11 +1,13 @@
 #pragma once
 
-#include <QtCore/QObject>
-
 #include "core/translator.h"
 #include "core/ts_context_menu_qt.h"
 #include "core/ts_infodata_qt.h"
 #include "core/talkers.h"
+
+#include <QtCore/QObject>
+
+#include <gsl/pointers>
 
 class Plugin_Base : public QObject
 {
@@ -151,21 +153,20 @@ public:
 	/* Client UI callbacks */
 	//void onAvatarUpdated(uint64 serverConnectionHandlerID, anyID clientID, const char* avatarPath);
 	void onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID);
-	/*void onHotkeyEvent(const char* keyword);
-	void onHotkeyRecordedEvent(const char* keyword, const char* key);
-	void onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName, const char* uniqueClientIdentifier);
-	const char* keyDeviceName(const char* keyIdentifier);
-	const char* displayKeyText(const char* keyIdentifier);
-	const char* keyPrefix() {};*/
+    /*void onHotkeyEvent(const char* keyword);
+    void onHotkeyRecordedEvent(const char* keyword, const char* key);
+    void onClientDisplayNameChanged(uint64 serverConnectionHandlerID, anyID clientID, const char* displayName,
+    const char* uniqueClientIdentifier); const char* keyDeviceName(const char* keyIdentifier); const char*
+    displayKeyText(const char* keyIdentifier); const char* keyPrefix() {};*/
 
-private:
-	const std::string kPluginId;
+  private:
+    const std::string kPluginId;
 
-	Translator* m_translator = nullptr;
-	TSContextMenu* m_context_menu = nullptr;
-	TSInfoData* m_info_data = nullptr;
-	Talkers* m_talkers = nullptr;
+    gsl::owner<Translator *> m_translator = nullptr;
+    gsl::owner<TSContextMenu *> m_context_menu = nullptr;
+    gsl::owner<TSInfoData *> m_info_data = nullptr;
+    gsl::owner<Talkers *> m_talkers = nullptr;
 
-	anyID my_id_move_event(uint64 sch_id, anyID client_id, uint64 new_channel_id, int visibility);
+    anyID my_id_move_event(uint64 sch_id, anyID client_id, uint64 new_channel_id, int visibility);
 };
 

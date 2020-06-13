@@ -1,12 +1,15 @@
 #include "core/translator.h"
 
-#include <QtCore/QString>
 #include "core/ts_helpers_qt.h"
 #include "core/ts_logging_qt.h"
 
+#include <QtCore/QString>
+
+#include <utility>
+
 Translator::Translator(QObject* parent, QString prefix)
 	: QTranslator(parent)
-	, kPrefix(prefix)
+    , kPrefix(std::move(prefix))
 {}
 
 bool Translator::update()

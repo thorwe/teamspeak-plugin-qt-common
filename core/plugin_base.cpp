@@ -1,15 +1,15 @@
 #include "core/plugin_base.h"
 
-#include "teamspeak/public_errors.h"
-#include "teamspeak/public_errors_rare.h"
+#include "plugin.h"
 #include "teamspeak/public_definitions.h"
 #include "teamspeak/public_rare_definitions.h"
-#include "ts3_functions.h"
-#include "plugin.h"
 
+#include "core/ts_functions.h"
+#include "core/ts_helpers_qt.h"
 #include "core/ts_logging_qt.h"
 #include "core/ts_settings_qt.h"
-#include "core/ts_helpers_qt.h"
+
+using namespace com::teamspeak::pluginsdk;
 
 Plugin_Base::Plugin_Base(const char* plugin_id, QObject *parent)
 	: QObject(parent)
@@ -73,137 +73,140 @@ int Plugin_Base::init()
         db.setDatabaseName(TSHelpers::GetPath(teamspeak::plugin::Path::Config) + "settings.db");
 
 		if (db.isValid())
-			TSLogging::Log("Database is valid.");
-		else
-			TSLogging::Log("Database is not valid.");
+            TSLogging::Log("Database is valid.");
+        else
+            TSLogging::Log("Database is not valid.");
 
-		if (!db.open())
-		{
-			TSLogging::Error("Error loading settings.db; aborting init", 0, NULL);
-			return 1;
-		}
-	}
+        if (!db.open())
+        {
+            TSLogging::Error("Error loading settings.db; aborting init");
+            return 1;
+        }
+    }
 
-	const auto kDerivedResult = initialize();
+    const auto kDerivedResult = initialize();
 
-	// Support enabling the plugin while already connected
-	uint64* servers;
-	if (ts3Functions.getServerConnectionHandlerList(&servers) == ERROR_ok)
-	{
-		for (auto server = servers; *server != (uint64)NULL; ++server)
-		{
-			int status;
-			if (ts3Functions.getConnectionStatus(*server, &status) != ERROR_ok)
-				continue;
+    // Support enabling the plugin while already connected
+    if (auto [error_get_connection_ids, connection_ids] = funcs::get_server_connection_handler_ids();
+        error_get_connection_ids == ts_errc::ok)
+    {
+        for (const auto connection_id : connection_ids)
+        {
+            if (auto [error_connection_status, connection_status] =
+                funcs::get_connection_status(connection_id);
+                error_connection_status == ts_errc::ok)
+            {
+                if (connection_status > STATUS_DISCONNECTED)
+                {
+                    // Not used by now
+                    //uint64 channelID;
+                    for (int j = STATUS_CONNECTING; j <= connection_status; ++j)
+                    {
+                        ts3plugin_onConnectStatusChangeEvent(connection_id, j, 0);
+                        /*if (j == STATUS_CONNECTED)
+                        {
+                        // Get our channel and publish it as default channel
+                        anyID myID;
+                        if(ts_funcs.getClientID(*server,&myID) == ts_errc::ok)
+                        {
+                        if(ts_funcs.getChannelOfClient(*server,myID,&channelID) == ts_errc::ok)
+                        {
+                        uint64 channelParentID;
+                        if (ts_funcs.getParentChannelOfChannel(*server,channelID,&channelParentID) ==
+                        ts_errc::ok) ts3plugin_onNewChannelEvent(*server, channelID, channelParentID);
+                        }
+                        }
+                        }
+                        else if (j == STATUS_CONNECTION_ESTABLISHING)
+                        {
+                        // publish all other channels
+                        uint64* channelList;
+                        if (ts_funcs.getChannelList(*server,&channelList) == ts_errc::ok)
+                        {
+                        for (int k=0;channelList[k] != NULL;++k)
+                        {
+                        if (channelList[k] == channelID)
+                        continue;
 
-			if (status > STATUS_DISCONNECTED)
-			{
-				// Not used by now
-				//uint64 channelID;
-				for (int j = STATUS_CONNECTING; j <= status; ++j)
-				{
-					ts3plugin_onConnectStatusChangeEvent(*server, j, ERROR_ok);
-					/*if (j == STATUS_CONNECTED)
-					{
-					// Get our channel and publish it as default channel
-					anyID myID;
-					if(ts3Functions.getClientID(*server,&myID) == ERROR_ok)
-					{
-					if(ts3Functions.getChannelOfClient(*server,myID,&channelID) == ERROR_ok)
-					{
-					uint64 channelParentID;
-					if (ts3Functions.getParentChannelOfChannel(*server,channelID,&channelParentID) == ERROR_ok)
-					ts3plugin_onNewChannelEvent(*server, channelID, channelParentID);
-					}
-					}
-					}
-					else if (j == STATUS_CONNECTION_ESTABLISHING)
-					{
-					// publish all other channels
-					uint64* channelList;
-					if (ts3Functions.getChannelList(*server,&channelList) == ERROR_ok)
-					{
-					for (int k=0;channelList[k] != NULL;++k)
-					{
-					if (channelList[k] == channelID)
-					continue;
+                        uint64 channelParentID;
+                        if (ts_funcs.getParentChannelOfChannel(*server,channelList[k],&channelParentID) ==
+                        ts_errc::ok) ts3plugin_onNewChannelEvent(*server, channelList[k], channelParentID); //
+                        ToDo: Hope it's not necessary to sort those
+                        }
+                        ts_funcs.freeMemory(channelList);
+                        }
+                        }*/
+                    }
+                    if (connection_status == STATUS_CONNECTION_ESTABLISHED)
+                    {
+                        ts3plugin_currentServerConnectionChanged(connection_id);
+                        if (const auto error_refresh = talkers().RefreshTalkers(connection_id);
+                            error_refresh != ts_errc::ok)
+                            TSLogging::Error("Error refreshing talkers: ", connection_id, error_refresh);
+                    }
+                }
+            }
 
-					uint64 channelParentID;
-					if (ts3Functions.getParentChannelOfChannel(*server,channelList[k],&channelParentID) == ERROR_ok)
-					ts3plugin_onNewChannelEvent(*server, channelList[k], channelParentID); // ToDo: Hope it's not necessary to sort those
-					}
-					ts3Functions.freeMemory(channelList);
-					}
-					}*/
-				}
-				if (status == STATUS_CONNECTION_ESTABLISHED)
-				{
-					ts3plugin_currentServerConnectionChanged(*server);
-					unsigned int error;
-					if ((error = talkers().RefreshTalkers(*server)) != ERROR_ok)
-						TSLogging::Error("Error refreshing talkers: ", *server, error);
-				}
-			}
-		}
-		ts3Functions.freeMemory(servers);
-
-		// Get the active server tab
-		auto scHandlerID = ts3Functions.getCurrentServerConnectionHandlerID();
-		if (scHandlerID != 0)
-			ts3plugin_currentServerConnectionChanged(scHandlerID);
-	}
+            if (const auto current_connection_id = funcs::get_current_server_connection_handler_id(); current_connection_id != 0)
+                ts3plugin_currentServerConnectionChanged(current_connection_id);
+        }
+    }
 
 	TSLogging::Log("init done");
 	return kDerivedResult;	/* 0 = success, 1 = failure */
 }
 
-void Plugin_Base::currentServerConnectionChanged(uint64 serverConnectionHandlerID)
+void Plugin_Base::currentServerConnectionChanged(uint64 connection_id)
 {
 	// event will fire twice on connecting to a new tab; first before connecting, second after established by our manual trigger
-	unsigned int error;
-	int status;
-	if ((error = ts3Functions.getConnectionStatus(serverConnectionHandlerID, &status)) != ERROR_ok)
-	{
-		TSLogging::Error("ts3plugin_currentServerConnectionChanged", serverConnectionHandlerID, error);
-		return;
-	}
-	if (status != STATUS_CONNECTION_ESTABLISHED)
+    auto[error_connection_status, connection_status] = funcs::get_connection_status(connection_id);
+    if (ts_errc::ok != error_connection_status)
+    {
+        TSLogging::Error("ts3plugin_currentServerConnectionChanged", connection_id, error_connection_status);
+        return;
+    }
+
+    if (connection_status != STATUS_CONNECTION_ESTABLISHED)
 		return;
 
-	on_current_server_connection_changed(serverConnectionHandlerID);
-	//    infoData->setHomeId(serverConnectionHandlerID);
+    on_current_server_connection_changed(connection_id);
 }
 
-void Plugin_Base::onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber)
+void Plugin_Base::onConnectStatusChangeEvent(uint64 connection_id, int newStatus, unsigned int errorNumber)
 {
-	talkers().onConnectStatusChangeEvent(serverConnectionHandlerID, newStatus, errorNumber);
+    talkers().onConnectStatusChangeEvent(connection_id, newStatus, errorNumber);
 	if (newStatus == STATUS_CONNECTION_ESTABLISHED)
 	{
-		currentServerConnectionChanged(serverConnectionHandlerID);
+        currentServerConnectionChanged(connection_id);
 		// Fake client move of myself
 
-		unsigned int error;
 		// Get My Id on this handler
-		anyID myID;
-		if ((error = ts3Functions.getClientID(serverConnectionHandlerID, &myID)) != ERROR_ok)
-			TSLogging::Error("(ts3plugin_onConnectStatusChangeEvent) Error getting my clientID");
-		{
-			// Get My channel on this handler
-			uint64 channelID;
-			if ((error = ts3Functions.getChannelOfClient(serverConnectionHandlerID, myID, &channelID)) != ERROR_ok)
-				TSLogging::Error("(ts3plugin_onConnectStatusChangeEvent) Error getting my clients channel id", serverConnectionHandlerID, error);
-			else
-				onClientMoveEvent(serverConnectionHandlerID, myID, 0, channelID, ENTER_VISIBILITY, "");
-		}
+        const auto [error_my_id, my_id] = funcs::get_client_id(connection_id);
+        if (ts_errc::ok != error_my_id)
+        {
+            TSLogging::Error("(onConnectStatusChangeEvent) Error getting my clientID");
+        }
+        else
+        {
+            const auto [error_channel, channel_id] = funcs::get_channel_of_client(connection_id, my_id);
+            if (ts_errc::ok != error_channel)
+            {
+                TSLogging::Error("(onConnectStatusChangeEvent) Error getting my clients channel id", connection_id, error_channel);
+            }
+            else
+            {
+                onClientMoveEvent(connection_id, my_id, 0, channel_id, ENTER_VISIBILITY, "");
+            }
+        }
 	}
-	on_connect_status_changed(serverConnectionHandlerID, newStatus, errorNumber);
+    on_connect_status_changed(connection_id, newStatus, errorNumber);
 }
 
-void Plugin_Base::onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char * moveMessage)
+void Plugin_Base::onClientMoveEvent(uint64 connection_id, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char * moveMessage)
 {
-	const auto kMyId = my_id_move_event(serverConnectionHandlerID, clientID, newChannelID, visibility);
+    const auto kMyId = my_id_move_event(connection_id, clientID, newChannelID, visibility);
 	if (kMyId)
-		on_client_move(serverConnectionHandlerID, clientID, oldChannelID, newChannelID, visibility, kMyId, moveMessage);
+        on_client_move(connection_id, clientID, oldChannelID, newChannelID, visibility, kMyId, moveMessage);
 }
 
 void Plugin_Base::onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char * timeoutMessage)
@@ -263,30 +266,28 @@ void Plugin_Base::onMenuItemEvent(uint64 serverConnectionHandlerID, PluginMenuTy
 
 anyID Plugin_Base::my_id_move_event(uint64 sch_id, anyID client_id, uint64 new_channel_id, int visibility)
 {
-    unsigned int error = ERROR_ok;
     if (new_channel_id == 0)
     {
         // When we disconnect, we get moved to chan 0 before the connection event
         // However, we aren't able to get our own id etc. anymore via the API for comparison
         // Therefor, unless we cache our ids for no other benefit, this is a workaround by filtering those out
-        int con_status = STATUS_DISCONNECTED;
-		if ((error = ts3Functions.getConnectionStatus(sch_id, &con_status)) != ERROR_ok)
-		{
-			TSLogging::Error("(filter_move_event)", sch_id, error);
-			return 0;
-		}
-		if (con_status == STATUS_DISCONNECTED)
+        const auto[error_connection_status, connection_status] = funcs::get_connection_status(sch_id);
+        if (ts_errc::ok != error_connection_status)
+        {
+            TSLogging::Error("(filter_move_event)", sch_id, error_connection_status);
+            return 0;
+        }
+        if (STATUS_DISCONNECTED == connection_status)
 			return 0;
 	}
-    else if ((visibility != LEAVE_VISIBILITY) && (TSHelpers::IsClientQuery(sch_id, client_id)))
-		return 0;
+    else if ((LEAVE_VISIBILITY != visibility) && (TSHelpers::is_query_client(sch_id, client_id)))
+        return 0;
 
-	// Get My Id on this handler
-    anyID my_id = 0;
-	if ((error = ts3Functions.getClientID(sch_id, &my_id)) != ERROR_ok)
-	{
-		TSLogging::Error("(ts3plugin_onClientMoveEvent)", sch_id, error);
-		return 0;
-	}
+    const auto [error_my_id, my_id] = funcs::get_client_id(sch_id);
+    if (ts_errc::ok != error_my_id)
+    {
+        TSLogging::Error("(ts3plugin_onClientMoveEvent)", sch_id, error_my_id);
+        return 0;
+    }
 	return my_id;
 }

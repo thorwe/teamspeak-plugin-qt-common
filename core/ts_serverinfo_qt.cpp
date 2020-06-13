@@ -1,14 +1,15 @@
 #include "core/ts_serverinfo_qt.h"
 
-#include "teamspeak/public_errors.h"
 #include "teamspeak/public_rare_definitions.h"
 
 #include "ts_missing_definitions.h"
 
+#include "core/ts_functions.h"
 #include "core/ts_helpers_qt.h"
 #include "core/ts_logging_qt.h"
 #include "plugin.h"
-#include "ts3_functions.h"
+
+using namespace com::teamspeak::pluginsdk;
 
 TSServerInfo::TSServerInfo(QObject *parent, uint64 server_connection_id)
 	: QObject(parent)
@@ -22,42 +23,36 @@ uint64 TSServerInfo::getServerConnectionHandlerID() const
 
 QString TSServerInfo::getName() const
 {
-    unsigned int error;
-    char* s_name;
-    if ((error = ts3Functions.getServerVariableAsString(m_server_connection_id, VIRTUALSERVER_NAME, &s_name)) != ERROR_ok)
+    const auto [error_server_name, server_name] = funcs::get_server_property_as_string(m_server_connection_id, VIRTUALSERVER_NAME);
+    if (ts_errc::ok != error_server_name)
     {
-        TSLogging::Error("(TSServerInfo::getName())", NULL, error, true);
+        TSLogging::Error("(TSServerInfo::getName())", NULL, error_server_name, true);
         return QString::null;
     }
-    auto name = QString::fromUtf8(s_name);
-    ts3Functions.freeMemory(s_name);
-    return name;
+
+    return QString::fromUtf8(server_name.data());
 }
 
 QString TSServerInfo::getUniqueId() const
 {
-    unsigned int error;
-    char* s_val;
-    if ((error = ts3Functions.getServerVariableAsString(m_server_connection_id, VIRTUALSERVER_UNIQUE_IDENTIFIER, &s_val)) != ERROR_ok)
+    const auto [error_server_uid, server_uid] = funcs::get_server_property_as_string(m_server_connection_id, VIRTUALSERVER_UNIQUE_IDENTIFIER);
+    if (ts_errc::ok != error_server_uid)
     {
-        TSLogging::Error("(TSServerInfo::getUniqueId())", NULL, error, true);
+        TSLogging::Error("(TSServerInfo::getUniqueId())", NULL, error_server_uid, true);
         return QString::null;
     }
-    auto val = QString::fromUtf8(s_val);
-    ts3Functions.freeMemory(s_val);
-    return val;
+    return QString::fromUtf8(server_uid.data());
 }
 
 uint64 TSServerInfo::getDefaultChannelGroup() const
 {
-    unsigned int error;
-    uint64 result;
-    if ((error = ts3Functions.getServerVariableAsUInt64(m_server_connection_id, VIRTUALSERVER_DEFAULT_CHANNEL_GROUP, &result)) != ERROR_ok)
+    const auto [error_default_channel_group, default_channel_group] = funcs::get_server_property_as_uint64(m_server_connection_id, VIRTUALSERVER_DEFAULT_CHANNEL_GROUP);
+    if (ts_errc::ok != error_default_channel_group)
     {
-        TSLogging::Error("Could not get default channel group", m_server_connection_id, error, true);
-        return (uint64)NULL;
+        TSLogging::Error("Could not get default channel group", m_server_connection_id, error_default_channel_group, true);
+        return 0;
     }
-    return result;
+    return default_channel_group;
 }
 
 uint64 TSServerInfo::GetServerGroupId(QString name) const

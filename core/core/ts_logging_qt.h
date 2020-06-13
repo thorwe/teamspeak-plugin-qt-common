@@ -1,8 +1,10 @@
 #pragma once
 
-#include <QtCore/QString>
+#include "core/ts_error.h"
 
 #include "teamspeak/public_definitions.h"
+
+#include <QtCore/QString>
 
 namespace TSLogging
 {
@@ -10,10 +12,19 @@ namespace TSLogging
     bool GetInfoIcon(QString &in);
     void PlayErrorSound(uint64 serverConnectionHandlerID = 0);
 
-    void Error(QString message, uint64 serverConnectionHandlerID, unsigned int error, bool isSoundSilent = false);
-    inline void Error(QString message, unsigned int error)                                      {Error(message, 0, error, false);}
-    inline void Error(QString message, bool isSoundSilent)                                      {Error(message, 0, NULL, isSoundSilent);}
-    inline void Error(QString message)                                                          {Error(message, 0, NULL, false);}
+    void Error(QString message, uint64 connection_id, std::error_code error, bool isSoundSilent = false);
+    inline void Error(QString message, std::error_code error)
+    {
+        Error(message, 0, error, false);
+    }
+    inline void Error(QString message, bool isSoundSilent)
+    {
+        Error(message, 0, ts_errc::ok, isSoundSilent);
+    }
+    inline void Error(QString message)
+    {
+        Error(message, 0, ts_errc::ok, false);
+    }
 
     void Print(QString message, uint64 serverConnectionHandlerID = 0, LogLevel logLevel = LogLevel_INFO);
     inline void Print(QString message, LogLevel logLevel)                                       {Print(message, 0, logLevel);}

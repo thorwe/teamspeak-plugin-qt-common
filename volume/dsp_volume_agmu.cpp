@@ -1,7 +1,7 @@
 #include "volume/dsp_volume_agmu.h"
 
-#include "volume/dsp_helpers.h"
 #include "volume/db.h"
+#include "volume/dsp_helpers.h"
 
 #include <algorithm>
 #include <limits>
@@ -12,7 +12,7 @@ namespace {
     {
         return std::min((lin2db(std::numeric_limits<int16_t>::max() / peak)) - 2, 12.0f); // leave some headroom
     }
-}
+} // namespace
 
 void DspVolumeAGMU::process(gsl::span<int16_t> samples, int32_t channels)
 {

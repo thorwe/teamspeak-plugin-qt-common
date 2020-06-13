@@ -14,41 +14,53 @@ include_directories(
     "${CMAKE_CURRENT_LIST_DIR}/deps/gsl/include"
 )
 
-set (TS_QT_CORE
+set (TS_XX
     "${CMAKE_CURRENT_LIST_DIR}/core/core/definitions.h"
+    "${CMAKE_CURRENT_LIST_DIR}/core/core/ts_error.h"
+    "${CMAKE_CURRENT_LIST_DIR}/core/core/ts_functions.h"
+    "${CMAKE_CURRENT_LIST_DIR}/core/ts_error.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/core/ts_functions.cpp"
+)
+
+set (TS_CORE
     "${CMAKE_CURRENT_LIST_DIR}/core/core/client_storage.h"
+    "${CMAKE_CURRENT_LIST_DIR}/core/core/module.h"
+    "${CMAKE_CURRENT_LIST_DIR}/core/core/plugin_helpers.h"
+    "${CMAKE_CURRENT_LIST_DIR}/core/module.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/core/plugin_helpers.cpp"
+)
+
+set (TS_QT_CORE
     "${CMAKE_CURRENT_LIST_DIR}/core/core/plugin_base.h"
     "${CMAKE_CURRENT_LIST_DIR}/core/core/translator.h"
-    "${CMAKE_CURRENT_LIST_DIR}/core/core/module.h"
     "${CMAKE_CURRENT_LIST_DIR}/core/core/module_qt.h"
-    "${CMAKE_CURRENT_LIST_DIR}/core/core/plugin_helpers.h"
     "${CMAKE_CURRENT_LIST_DIR}/core/core/ts_helpers_qt.h"
     "${CMAKE_CURRENT_LIST_DIR}/core/core/ts_settings_qt.h"
     "${CMAKE_CURRENT_LIST_DIR}/core/core/ts_logging_qt.h"
     "${CMAKE_CURRENT_LIST_DIR}/core/core/ts_context_menu_qt.h"
     "${CMAKE_CURRENT_LIST_DIR}/core/core/ts_infodata_qt.h"
-    "${CMAKE_CURRENT_LIST_DIR}/core/core/ts_servergroups.h"
-    "${CMAKE_CURRENT_LIST_DIR}/core/core/ts_serversinfo.h"
-    "${CMAKE_CURRENT_LIST_DIR}/core/core/ts_serverinfo_qt.h"
+    #"${CMAKE_CURRENT_LIST_DIR}/core/core/ts_servergroups.h"
+    #"${CMAKE_CURRENT_LIST_DIR}/core/core/ts_serversinfo.h"
+    #"${CMAKE_CURRENT_LIST_DIR}/core/core/ts_serverinfo_qt.h"
     "${CMAKE_CURRENT_LIST_DIR}/core/core/talkers.h"
     "${CMAKE_CURRENT_LIST_DIR}/core/plugin_base.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/core/translator.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/core/module.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/core/module_qt.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/core/plugin_helpers.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/core/ts_helpers_qt.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/core/ts_settings_qt.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/core/ts_logging_qt.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/core/ts_context_menu_qt.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/core/ts_infodata_qt.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/core/ts_servergroups.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/core/ts_serversinfo.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/core/ts_serverinfo_qt.cpp"
+    #"${CMAKE_CURRENT_LIST_DIR}/core/ts_servergroups.cpp"
+    #"${CMAKE_CURRENT_LIST_DIR}/core/ts_serversinfo.cpp"
+    #"${CMAKE_CURRENT_LIST_DIR}/core/ts_serverinfo_qt.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/core/talkers.cpp"
 )
 
 # Create named folders for the sources within the .vcproj
 # Empty name lists them directly under the .vcproj
+source_group("ts_xx" FILES ${TS_XX})
+source_group("ts_core" FILES ${TS_CORE})
 source_group("ts_qt_core" FILES ${TS_QT_CORE})
 
 if (WITH_VOLUME OR WITH_VOLUME_WIDGETS)

@@ -1,17 +1,17 @@
 #include "core/plugin_helpers.h"
 
-#include "ts3_functions.h"
+#include "core/ts_functions.h"
+
 #include "plugin.h"
 
 #include <algorithm>
-#include <array>
 #include <cctype>
 #include <string>
 
+using namespace com::teamspeak::pluginsdk;
+
 namespace teamspeak::plugin
 {
-
-constexpr const int32_t kPathBufferSize = 512;
 
 std::filesystem::path get_path(Path path)
 {
@@ -19,21 +19,22 @@ std::filesystem::path get_path(Path path)
 
     switch (path)
     {
+    case Path::App:
+    {
+        result = funcs::get_app_path().data();
+        break;
+    }
     case Path::Config:
     {
-        auto path_ = std::array<char, kPathBufferSize>();
-        ts3Functions.getConfigPath(path_.data(), kPathBufferSize);
-        result = path_.data();
+        result = funcs::get_config_path().data();
         break;
     }
     case Path::Resources:
     {
-        auto path_ = std::array<char, kPathBufferSize>();
-        ts3Functions.getResourcesPath(path_.data(), kPathBufferSize);
-        result = path_.data();
+        result = funcs::get_resources_path().data();
         break;
     }
-    case Path::PluginIni: // honestly, just gimme a break and don't go crazy with plugin names
+    case Path::PluginIni: // honestly, just gimme a break and don't go crazy with plugin names or do a pull request
     {
         auto plugin_name = std::string{ts3plugin_name()};
         plugin_name.erase(std::remove_if(std::begin(plugin_name), std::end(plugin_name), ::isspace), std::end(plugin_name));
@@ -49,4 +50,4 @@ std::filesystem::path get_path(Path path)
     return result;
 }
 
-}
+} // namespace teamspeak::plugin

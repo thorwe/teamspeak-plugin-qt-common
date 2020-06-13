@@ -1,8 +1,9 @@
 #include "core/ts_context_menu_qt.h"
 
-#include "plugin_definitions.h"
 #include "core/plugin_base.h"
 #include "core/ts_logging_qt.h"
+
+#include "plugin_definitions.h"
 
 #include <QtCore/QPointer>
 

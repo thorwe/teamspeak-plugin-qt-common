@@ -1,6 +1,10 @@
 #pragma once
 
+#include "core/definitions.h"
 #include "core/module.h"
+#include "core/ts_error.h"
+
+#include "teamspeak/public_definitions.h"
 
 #include <QtCore/QObject>
 
@@ -33,12 +37,18 @@ protected:
     virtual void onBlockedChanged(bool) {}
     virtual void onRunningChanged(bool) {}
 
-    void Print(QString message, uint64 serverConnectionHandlerID = 0, LogLevel logLevel = LogLevel_INFO);
-    inline void Print(QString message, LogLevel logLevel)   {Print(message, 0 ,logLevel);}
-    void Log(QString message, uint64 serverConnectionHandlerID = 0, LogLevel logLevel = LogLevel_INFO);
-    inline void Log(QString message, LogLevel logLevel)     {Log(message, 0, logLevel);}
-    void Error(QString message, uint64 serverConnectionHandlerID = 0, unsigned int error = ERROR_ok);
-    inline void Error(QString message, unsigned int error)  {Error(message, 0, error);}
+    void Print(const QString &message,
+               com::teamspeak::connection_id_t connection_id = 0,
+               LogLevel logLevel = LogLevel_INFO);
+    inline void Print(const QString& message, LogLevel logLevel) { Print(message, 0 ,logLevel); }
+    void Log(const QString &message,
+             com::teamspeak::connection_id_t connection_id = 0,
+             LogLevel logLevel = LogLevel_INFO);
+    inline void Log(const QString& message, LogLevel logLevel)   { Log(message, 0, logLevel); }
+    void Error(const QString &message,
+               com::teamspeak::connection_id_t connection_id = 0,
+               std::error_code error = ts_errc::ok);
+    inline void Error(const QString &message, std::error_code error) { Error(message, 0, error); }
 
     bool m_isPrintEnabled{ false };
 };

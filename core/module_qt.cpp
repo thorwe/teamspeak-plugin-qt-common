@@ -1,9 +1,4 @@
 #include "core/module_qt.h"
-#include "ts3_functions.h"
-#include "plugin.h"
-
-#include <QtCore/QTime>
-#include <QtCore/QTextStream>
 
 #include "core/ts_logging_qt.h"
 
@@ -34,27 +29,27 @@ void Module_Qt::on_running_changed(bool val)
     onRunningChanged(val);
 }
 
-void Module_Qt::Print(QString message, uint64 serverConnectionHandlerID, LogLevel logLevel)
+void Module_Qt::Print(const QString &message, uint64 connection_id, LogLevel logLevel)
 {
 #ifndef CONSOLE_OUTPUT
     Q_UNUSED(message);
-    Q_UNUSED(serverConnectionHandlerID);
+    Q_UNUSED(connection_id);
     Q_UNUSED(logLevel);
 #else
     if (!m_isPrintEnabled)
         return;
 
-    TSLogging::Print((this->objectName() + ": " + message), serverConnectionHandlerID, logLevel);
+    TSLogging::Print((this->objectName() + ": " + message), connection_id, logLevel);
 #endif
 }
 
-void Module_Qt::Log(QString message, uint64 serverConnectionHandlerID, LogLevel logLevel)
+void Module_Qt::Log(const QString &message, uint64 connection_id, LogLevel logLevel)
 {
-    TSLogging::Log((this->objectName() + ": " + message), serverConnectionHandlerID, logLevel);
-    Print(message, serverConnectionHandlerID, logLevel);
+    TSLogging::Log((this->objectName() + ": " + message), connection_id, logLevel);
+    Print(message, connection_id, logLevel);
 }
 
-void Module_Qt::Error(QString message, uint64 serverConnectionHandlerID, unsigned int error)
+void Module_Qt::Error(const QString &message, uint64 connection_id, std::error_code error)
 {
-    TSLogging::Error((this->objectName() + ": " + message), serverConnectionHandlerID, error);
+    TSLogging::Error((this->objectName() + ": " + message), connection_id, error);
 }

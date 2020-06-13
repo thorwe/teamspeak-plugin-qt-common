@@ -1,10 +1,5 @@
 #pragma once
 
-#include "core/definitions.h"
-
-#include "teamspeak/public_definitions.h"
-#include "teamspeak/public_errors.h"
-
 #include <atomic>
 
 class Module

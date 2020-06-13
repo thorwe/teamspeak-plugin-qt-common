@@ -1,11 +1,4 @@
 #include "core/module.h"
-#include "ts3_functions.h"
-#include "plugin.h"
-
-#include <QtCore/QTime>
-#include <QtCore/QTextStream>
-
-#include "core/ts_logging_qt.h"
 
 bool Module::running() const
 {

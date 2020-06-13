@@ -3,7 +3,7 @@
 
 #include "plugin.h"
 
-TSSettings* TSSettings::m_Instance = nullptr;
+TSSettings *TSSettings::m_Instance = nullptr;
 
 void TSSettings::Init(QString tsConfigPath)
 {
@@ -11,13 +11,14 @@ void TSSettings::Init(QString tsConfigPath)
     m_SettingsDb = QSqlDatabase::addDatabase("QSQLITE", name);
     m_SettingsDb.setDatabaseName(tsConfigPath + "settings.db");
     if (!QFile::exists(m_SettingsDb.database(name).databaseName()))
-        TSLogging::Log(QString("Couldn't open settings.db: %1 does not exist.").arg(m_SettingsDb.database().databaseName()));
+        TSLogging::Log(
+        QString("Couldn't open settings.db: %1 does not exist.").arg(m_SettingsDb.database().databaseName()));
 
     if (!m_SettingsDb.isValid())
         TSLogging::Log("Database is not valid.");
 
-    if(!m_SettingsDb.open())
-        TSLogging::Error("Error loading settings.db; aborting init", 0, NULL);
+    if (!m_SettingsDb.open())
+        TSLogging::Error("Error loading settings.db; aborting init");
 }
 
 //! Find out which Sound Pack the user is currently using
@@ -108,7 +109,8 @@ bool TSSettings::GetBookmarks(QStringList &result)
  * \brief TSSettings::GetBookmarkByServerUID Find a bookmark by server uid
  * \param sUID the server uid
  * \param result a QMap
- * \return true on success, false when an error has occurred; note that not found is a non-error -> success; just check if the QMap is empty for that
+ * \return true on success, false when an error has occurred; note that not found is a non-error -> success;
+ * just check if the QMap is empty for that
  */
 bool TSSettings::GetBookmarkByServerUID(QString sUID, QMap<QString, QString> &result)
 {
@@ -119,7 +121,7 @@ bool TSSettings::GetBookmarkByServerUID(QString sUID, QMap<QString, QString> &re
     sUID.prepend("ServerUID=");
     for (int i = 0; i < bookmarks.size(); ++i)
     {
-        const auto& bookmark = bookmarks.at(i);
+        const auto &bookmark = bookmarks.at(i);
         if (bookmark.contains(sUID))
         {
             result = GetMapFromValue(bookmark);
@@ -159,14 +161,14 @@ bool TSSettings::GetContacts(QStringList &result)
 
 //! Returns the language the client will be trying to use
 /*!
- * \brief TSSettings::GetLanguage Query the TS database for the user language selection; on system default, fallback to OS language
- * \param result the result will be put in here
- * \return true on success, false when an error has occurred
+ * \brief TSSettings::GetLanguage Query the TS database for the user language selection; on system default,
+ * fallback to OS language \param result the result will be put in here \return true on success, false when an
+ * error has occurred
  */
 bool TSSettings::GetLanguage(QString &result)
 {
-    QString query("SELECT value FROM Application WHERE key='Language'"); //"","enUS","deDE"...
-    if (!(GetValueFromQuery(query, result,true)))
+    QString query("SELECT value FROM Application WHERE key='Language'");  //"","enUS","deDE"...
+    if (!(GetValueFromQuery(query, result, true)))
     {
         error_qsql.setDriverText(error_qsql.driverText().prepend("(GetLanguage) "));
         result = QLocale::system().name();
@@ -182,7 +184,7 @@ bool TSSettings::Is3DSoundEnabled(bool &result)
 {
     QString qstr_result;
     QString query("SELECT value FROM Application WHERE key='3DSoundEnabled'");
-    if (!(GetValueFromQuery(query, qstr_result,false)))
+    if (!(GetValueFromQuery(query, qstr_result, false)))
     {
         error_qsql.setDriverText(error_qsql.driverText().prepend("(Is3DSoundEnabled) "));
         return false;
@@ -193,12 +195,14 @@ bool TSSettings::Is3DSoundEnabled(bool &result)
 
 bool TSSettings::Set3DSoundEnabled(bool val)
 {
-    QSqlQuery q_query(QString("UPDATE Application SET value='%1' WHERE key='3DSoundEnabled'").arg((val)?"1":"0"), m_SettingsDb);
+    QSqlQuery q_query(
+    QString("UPDATE Application SET value='%1' WHERE key='3DSoundEnabled'").arg((val) ? "1" : "0"),
+    m_SettingsDb);
     if (!q_query.exec())
     {
         auto sql_error = q_query.lastError();
         if (sql_error.isValid())
-            error_qsql=sql_error;
+            error_qsql = sql_error;
         else
             SetError("Unknown error on query.exec.");
 
@@ -227,11 +231,11 @@ QSqlError TSSettings::GetLastError()
  */
 QMap<QString, QString> TSSettings::GetMapFromValue(QString value)
 {
-    QMap<QString,QString> result;
-    auto qstrl_value = value.split(QRegExp("[\r\n]"),QString::SkipEmptyParts);
-    for (int i = 0;i<qstrl_value.count();++i)
+    QMap<QString, QString> result;
+    auto qstrl_value = value.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    for (int i = 0; i < qstrl_value.count(); ++i)
     {
-        const auto& qs_val = qstrl_value.at(i);
+        const auto &qs_val = qstrl_value.at(i);
         result.insert(qs_val.section("=", 0, 0), qs_val.section("=", 1));
     }
     return result;
@@ -245,15 +249,15 @@ QMap<QString, QString> TSSettings::GetMapFromValue(QString value)
  * \param isEmptyValid determines, if an empty result is considered an error
  * \return true on success, false when an error has occurred
  */
-bool TSSettings::GetValueFromQuery(QString query, QString &result, bool isEmptyValid) // provides first valid
+bool TSSettings::GetValueFromQuery(QString query, QString &result, bool isEmptyValid)  // provides first valid
 {
     QSqlQuery q_query(query, m_SettingsDb);
-    if(!q_query.exec())
+    if (!q_query.exec())
     {
         QSqlError sql_error = q_query.lastError();
         if (sql_error.isValid())
         {
-            error_qsql=sql_error;
+            error_qsql = sql_error;
             error_qsql.setDriverText(error_qsql.driverText().prepend("(q_query.exec()) "));
         }
         else
@@ -269,7 +273,7 @@ bool TSSettings::GetValueFromQuery(QString query, QString &result, bool isEmptyV
             auto sql_error = q_query.lastError();
             if (sql_error.isValid())
             {
-                error_qsql=sql_error;
+                error_qsql = sql_error;
                 error_qsql.setDriverText(error_qsql.driverText().prepend("(q_query.isSelect()) "));
             }
             else
@@ -283,7 +287,7 @@ bool TSSettings::GetValueFromQuery(QString query, QString &result, bool isEmptyV
             auto sql_error = q_query.lastError();
             if (sql_error.isValid())
             {
-                error_qsql=sql_error;
+                error_qsql = sql_error;
                 error_qsql.setDriverText(error_qsql.driverText().prepend("(q_query.isActive()) "));
             }
             else
@@ -301,7 +305,7 @@ bool TSSettings::GetValueFromQuery(QString query, QString &result, bool isEmptyV
                 auto sql_error = q_query.lastError();
                 if (sql_error.isValid())
                 {
-                    error_qsql=sql_error;
+                    error_qsql = sql_error;
                     error_qsql.setDriverText(error_qsql.driverText().prepend("(q_query.isValid()) "));
                 }
                 else
@@ -320,7 +324,7 @@ bool TSSettings::GetValueFromQuery(QString query, QString &result, bool isEmptyV
         }
         if (!found)
         {
-            if(isEmptyValid)
+            if (isEmptyValid)
             {
                 result = "";
                 found = true;
@@ -340,14 +344,14 @@ bool TSSettings::GetValueFromQuery(QString query, QString &result, bool isEmptyV
  * \param result the result will be put in here
  * \return true on success, false when an error has occurred
  */
-bool TSSettings::GetValuesFromQuery(QString query, QStringList &result) //proper result list
+bool TSSettings::GetValuesFromQuery(QString query, QStringList &result)  // proper result list
 {
     QSqlQuery q_query(query, m_SettingsDb);
-    if(!q_query.exec())
+    if (!q_query.exec())
     {
         auto sql_error = q_query.lastError();
         if (sql_error.isValid())
-            error_qsql=sql_error;
+            error_qsql = sql_error;
         else
             SetError("Unknown error on query.exec.");
 
@@ -359,7 +363,7 @@ bool TSSettings::GetValuesFromQuery(QString query, QStringList &result) //proper
         {
             QSqlError sql_error = q_query.lastError();
             if (sql_error.isValid())
-                error_qsql=sql_error;
+                error_qsql = sql_error;
             else
                 SetError("Unknown error on query.isSelect().");
 
@@ -369,7 +373,7 @@ bool TSSettings::GetValuesFromQuery(QString query, QStringList &result) //proper
         {
             QSqlError sql_error = q_query.lastError();
             if (sql_error.isValid())
-                error_qsql=sql_error;
+                error_qsql = sql_error;
             else
                 SetError("Unknown error on query.isActive().");
 
@@ -382,7 +386,7 @@ bool TSSettings::GetValuesFromQuery(QString query, QStringList &result) //proper
             {
                 QSqlError sql_error = q_query.lastError();
                 if (sql_error.isValid())
-                    error_qsql=sql_error;
+                    error_qsql = sql_error;
                 else
                     SetError("Unknown error on query.isValid().");
 
@@ -404,7 +408,8 @@ bool TSSettings::GetValuesFromQuery(QString query, QStringList &result) //proper
 void TSSettings::SetError(QString in)
 {
     QSqlError sql_error;
-    //sql_error.setType(-1); //Cannot manually set to "Cannot be determined"(-1) since out of ErrorType enum, hopefully it's the default QSqlError
+    // sql_error.setType(-1); //Cannot manually set to "Cannot be determined"(-1) since out of ErrorType enum,
+    // hopefully it's the default QSqlError
     sql_error.setNumber(-1);
     sql_error.setDatabaseText("Unknown Custom Error");
     sql_error.setDriverText(in);
