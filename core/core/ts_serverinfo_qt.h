@@ -11,10 +11,6 @@
 class TSServerInfo : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(uint64 serverConnectionHandlerID READ getServerConnectionHandlerID)
-    Q_PROPERTY(QString name READ getName)
-    Q_PROPERTY(QString uniqueId READ getUniqueId)
-    Q_PROPERTY(uint64 defaultChannelGroup READ getDefaultChannelGroup)
 
 public:
     explicit TSServerInfo(QObject *parent = 0, uint64 server_connection_id = 0);
@@ -31,9 +27,9 @@ public:
     void onChannelGroupListEvent(uint64 channel_group_id, const char* name, int type, int icon_id, int save_db);
     void onChannelGroupListFinishedEvent();
 
-    uint64 GetServerGroupId(QString name) const;
+    uint64 GetServerGroupId(const QString &name) const;
     QString GetServerGroupName(uint64 id) const;
-    uint64 GetChannelGroupId(QString name) const;
+    uint64 GetChannelGroupId(const QString &name) const;
     QString GetChannelGroupName(uint64 id) const;
 
 signals:

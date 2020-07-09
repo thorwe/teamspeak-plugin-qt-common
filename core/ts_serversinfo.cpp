@@ -38,7 +38,7 @@ TSServerInfo* TSServersInfo::get_server_info(uint64 server_connection_id, bool c
     return nullptr;
 }
 
-uint64 TSServersInfo::find_server_by_unique_id(QString server_uid)
+uint64 TSServersInfo::find_server_by_unique_id(const QString &server_uid)
 {
     uint64 server_connection_id = 0;
     {

@@ -23,8 +23,8 @@ class TSContextMenu : public QObject
 public:
 	TSContextMenu(Plugin_Base* plugin);
 
-    bool setMainIcon(QString icon);
-    int Register(QObject *p, PluginMenuType type, QString text, QString icon);
+    bool setMainIcon(const QString &icon);
+    int Register(QObject *p, PluginMenuType type, const QString &text, const QString &icon);
 
     void onInitMenus(struct PluginMenuItem ***menuItems, char **menuIcon);
     void onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenuType type, int menuItemID, uint64 selectedItemID);

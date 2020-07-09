@@ -114,7 +114,7 @@ namespace sound
     set_3d_wave_attributes(connection_id_t connection_id, uint64_t wave_handle, const TS3_VECTOR &position);
     std::error_code
     systemset_3d_settings(connection_id_t connection_id, float distance_factor, float rolloff_scale);
-    std::error_code channelset_3d_sttributes(connection_id_t connection_id,
+    std::error_code channelset_3d_attributes(connection_id_t connection_id,
                                              client_id_t client_id,
                                              const TS3_VECTOR &position);
 
@@ -649,7 +649,7 @@ void send_plugin_command(connection_id_t connection_id,
                          std::string_view plugin_id,
                          std::string_view command,
                          int target_mode,
-                         gsl::span<client_id_t> target_ids,
+                         gsl::span<const client_id_t> target_ids,
                          std::string_view return_code = "");
 
 std::string get_directories(std::string_view path, size_t max_len);

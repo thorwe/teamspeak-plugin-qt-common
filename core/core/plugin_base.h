@@ -1,13 +1,18 @@
 #pragma once
 
+#include "core/definitions.h"
+#include "core/talkers.h"
 #include "core/translator.h"
 #include "core/ts_context_menu_qt.h"
+#include "core/ts_error.h"
 #include "core/ts_infodata_qt.h"
-#include "core/talkers.h"
 
 #include <QtCore/QObject>
 
 #include <gsl/pointers>
+#include <gsl/span>
+
+#include <string_view>
 
 class Plugin_Base : public QObject
 {
@@ -52,54 +57,143 @@ public:
 	void initHotkeys(struct PluginHotkey*** hotkeys);*/
 
 	/* Clientlib */
-	void onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber);
-	virtual void on_connect_status_changed(uint64 sch_id, int new_status, unsigned int error_number) {};
-	/*void onNewChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID);
-	void onNewChannelCreatedEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier);
-	void onDelChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier);
-	void onChannelMoveEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 newChannelParentID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier);
-	void onUpdateChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID);
-	void onUpdateChannelEditedEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier);
-	void onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clientID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier);*/
-	void onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* moveMessage);
-	virtual void on_client_move(uint64 sch_id, anyID client_id, uint64 old_channel_id, uint64 new_channel_id, int visibility, anyID my_id, const char* move_message) {};
-	//void onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility);
-	void onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* timeoutMessage);
-	virtual void on_client_move_timeout(uint64 sch_id, anyID client_id, uint64 old_channel_id, anyID my_id, const char* timeout_message) {};
-	void onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID moverID, const char* moverName, const char* moverUniqueIdentifier, const char* moveMessage);
-	virtual void on_client_move_moved(uint64 sch_id, anyID client_id, uint64 old_channel_id, uint64 new_channel_id, int visibility, anyID my_id, anyID mover_id, const char* mover_name, const char* mover_unique_id, const char* move_message) {};
-	/*void onClientKickFromChannelEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage);
-	void onClientKickFromServerEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage);
-	void onClientIDsEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, anyID clientID, const char* clientName);
-	void onClientIDsFinishedEvent(uint64 serverConnectionHandlerID);
-	void onServerEditedEvent(uint64 serverConnectionHandlerID, anyID editerID, const char* editerName, const char* editerUniqueIdentifier);
-	void onServerUpdatedEvent(uint64 serverConnectionHandlerID);*/
-	virtual int on_server_error(uint64 sch_id, const char* error_message, unsigned int error, const char* return_code, const char* extra_message) { return 0; };
-	/*void onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage);
-	int  onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, const char* fromName, const char* fromUniqueIdentifier, const char* message, int ffIgnored);*/
-	void onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int status, int isReceivedWhisper, anyID clientID);
-	virtual void on_talk_status_changed(uint64 sch_id, int status, int is_received_whisper, anyID client_id, bool is_me) {};
-	/*void onConnectionInfoEvent(uint64 serverConnectionHandlerID, anyID clientID);
-	void onServerConnectionInfoEvent(uint64 serverConnectionHandlerID);
-	void onChannelSubscribeEvent(uint64 serverConnectionHandlerID, uint64 channelID);
-	void onChannelSubscribeFinishedEvent(uint64 serverConnectionHandlerID);
-	void onChannelUnsubscribeEvent(uint64 serverConnectionHandlerID, uint64 channelID);
-	void onChannelUnsubscribeFinishedEvent(uint64 serverConnectionHandlerID);
-	void onChannelDescriptionUpdateEvent(uint64 serverConnectionHandlerID, uint64 channelID);
-	void onChannelPasswordChangedEvent(uint64 serverConnectionHandlerID, uint64 channelID);
-	void onPlaybackShutdownCompleteEvent(uint64 serverConnectionHandlerID);
-	void onSoundDeviceListChangedEvent(const char* modeID, int playOrCap);*/
-	void onEditPlaybackVoiceDataEvent(uint64 serverConnectionHandlerID, anyID clientID, short* samples, int sampleCount, int channels);
-	virtual void on_playback_pre_process(uint64 sch_id, anyID client_id, short* samples, int frame_count, int channels) {};
-	void onEditPostProcessVoiceDataEvent(uint64 serverConnectionHandlerID, anyID clientID, short* samples, int sampleCount, int channels, const unsigned int* channelSpeakerArray, unsigned int* channelFillMask);
-	virtual void on_playback_post_process(uint64 sch_id, anyID client_id, std::int16_t* samples, std::int32_t frame_count, std::int32_t channels, const std::uint32_t* channel_speaker_array, std::uint32_t* channel_fill_mask) {};
-	virtual void on_playback_master(uint64 sch_id, std::int16_t* samples, std::int32_t frame_count, std::int32_t channels, const std::uint32_t* channel_speaker_array, std::uint32_t* channel_fill_mask) {};
-	virtual void on_captured(uint64 sch_id, std::int16_t* samples, std::int32_t frame_count, std::int32_t channels, std::int32_t* edited) {};
-	virtual void on_custom_3d_rolloff_calculation(uint64 sch_id, anyID client_id, float distance, float* volume) {};
-	/*void onCustom3dRolloffCalculationWaveEvent(uint64 serverConnectionHandlerID, uint64 waveHandle, float distance, float* volume);
-	void onUserLoggingMessageEvent(const char* logMessage, int logLevel, const char* logChannel, uint64 logID, const char* logTime, const char* completeLogString);*/
+    void
+    onConnectStatusChangeEvent(uint64 serverConnectionHandlerID, int newStatus, unsigned int errorNumber);
+    virtual void on_connect_status_changed(uint64 sch_id, int new_status, unsigned int error_number){};
+    /*void onNewChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID);
+    void onNewChannelCreatedEvent(uint64 serverConnectionHandlerID, uint64 channelID, uint64 channelParentID,
+    anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier); void
+    onDelChannelEvent(uint64 serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char*
+    invokerName, const char* invokerUniqueIdentifier); void onChannelMoveEvent(uint64
+    serverConnectionHandlerID, uint64 channelID, uint64 newChannelParentID, anyID invokerID, const char*
+    invokerName, const char* invokerUniqueIdentifier); void onUpdateChannelEvent(uint64
+    serverConnectionHandlerID, uint64 channelID); void onUpdateChannelEditedEvent(uint64
+    serverConnectionHandlerID, uint64 channelID, anyID invokerID, const char* invokerName, const char*
+    invokerUniqueIdentifier);
+    void onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clientID, anyID invokerID, const char*
+    invokerName, const char* invokerUniqueIdentifier);*/
+    void onClientMoveEvent(uint64 serverConnectionHandlerID,
+                           anyID clientID,
+                           uint64 oldChannelID,
+                           uint64 newChannelID,
+                           int visibility,
+                           const char *moveMessage);
+    virtual void on_client_move(uint64 sch_id,
+                                anyID client_id,
+                                uint64 old_channel_id,
+                                uint64 new_channel_id,
+                                int visibility,
+                                anyID my_id,
+                                const char *move_message){};
+    // void onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64
+    // oldChannelID, uint64 newChannelID, int visibility);
+    void onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID,
+                                  anyID clientID,
+                                  uint64 oldChannelID,
+                                  uint64 newChannelID,
+                                  int visibility,
+                                  const char *timeoutMessage);
+    virtual void on_client_move_timeout(
+    uint64 sch_id, anyID client_id, uint64 old_channel_id, anyID my_id, const char *timeout_message){};
+    void onClientMoveMovedEvent(uint64 serverConnectionHandlerID,
+                                anyID clientID,
+                                uint64 oldChannelID,
+                                uint64 newChannelID,
+                                int visibility,
+                                anyID moverID,
+                                const char *moverName,
+                                const char *moverUniqueIdentifier,
+                                const char *moveMessage);
+    virtual void on_client_move_moved(uint64 sch_id,
+                                      anyID client_id,
+                                      uint64 old_channel_id,
+                                      uint64 new_channel_id,
+                                      int visibility,
+                                      anyID my_id,
+                                      anyID mover_id,
+                                      const char *mover_name,
+                                      const char *mover_unique_id,
+                                      const char *move_message){};
+    /*void onClientKickFromChannelEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID,
+    uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char*
+    kickerUniqueIdentifier, const char* kickMessage); void onClientKickFromServerEvent(uint64
+    serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID
+    kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage); void
+    onClientIDsEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, anyID clientID,
+    const char* clientName); void onClientIDsFinishedEvent(uint64 serverConnectionHandlerID); void
+    onServerEditedEvent(uint64 serverConnectionHandlerID, anyID editerID, const char* editerName, const char*
+    editerUniqueIdentifier); void onServerUpdatedEvent(uint64 serverConnectionHandlerID);*/
 
-	/* Clientlib rare */
+    int onServerError(uint64 sch_id,
+                      const char *error_message,
+                      unsigned int error,
+                      const char *return_code,
+                      const char *extra_message);
+
+    virtual int on_server_error(com::teamspeak::connection_id_t connection_id,
+                                std::string_view error_message,
+                                ts_errc error,
+                                std::string_view return_code,
+                                std::string_view extra_message)
+    {
+        return 0;
+    };
+
+    /*void onServerStopEvent(uint64 serverConnectionHandlerID, const char* shutdownMessage);
+    int  onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID,
+    const char* fromName, const char* fromUniqueIdentifier, const char* message, int ffIgnored);*/
+    void onTalkStatusChangeEvent(uint64 serverConnectionHandlerID,
+                                 int status,
+                                 int isReceivedWhisper,
+                                 anyID clientID);
+    virtual void
+    on_talk_status_changed(uint64 sch_id, int status, int is_received_whisper, anyID client_id, bool is_me){};
+    /*void onConnectionInfoEvent(uint64 serverConnectionHandlerID, anyID clientID);
+    void onServerConnectionInfoEvent(uint64 serverConnectionHandlerID);
+    void onChannelSubscribeEvent(uint64 serverConnectionHandlerID, uint64 channelID);
+    void onChannelSubscribeFinishedEvent(uint64 serverConnectionHandlerID);
+    void onChannelUnsubscribeEvent(uint64 serverConnectionHandlerID, uint64 channelID);
+    void onChannelUnsubscribeFinishedEvent(uint64 serverConnectionHandlerID);
+    void onChannelDescriptionUpdateEvent(uint64 serverConnectionHandlerID, uint64 channelID);
+    void onChannelPasswordChangedEvent(uint64 serverConnectionHandlerID, uint64 channelID);
+    void onPlaybackShutdownCompleteEvent(uint64 serverConnectionHandlerID);
+    void onSoundDeviceListChangedEvent(const char* modeID, int playOrCap);*/
+    void onEditPlaybackVoiceDataEvent(
+    uint64 serverConnectionHandlerID, anyID clientID, short *samples, int sampleCount, int channels);
+    virtual void
+    on_playback_pre_process(uint64 sch_id, anyID client_id, short *samples, int frame_count, int channels){};
+    void onEditPostProcessVoiceDataEvent(uint64 serverConnectionHandlerID,
+                                         anyID clientID,
+                                         short *samples,
+                                         int sampleCount,
+                                         int channels,
+                                         const unsigned int *channelSpeakerArray,
+                                         unsigned int *channelFillMask);
+    virtual void on_playback_post_process(uint64 sch_id,
+                                          anyID client_id,
+                                          gsl::span<int16_t> samples,
+                                          std::int32_t channels,
+                                          const std::uint32_t *channel_speaker_array,
+                                          std::uint32_t *channel_fill_mask){};
+    virtual void on_playback_master(uint64 sch_id,
+                                    std::int16_t *samples,
+                                    std::int32_t frame_count,
+                                    std::int32_t channels,
+                                    const std::uint32_t *channel_speaker_array,
+                                    std::uint32_t *channel_fill_mask){};
+    virtual void on_captured(uint64 sch_id,
+                             std::int16_t *samples,
+                             std::int32_t frame_count,
+                             std::int32_t channels,
+                             std::int32_t *edited){};
+    virtual void
+    on_custom_3d_rolloff_calculation(uint64 sch_id, anyID client_id, float distance, float *volume){};
+    /*void onCustom3dRolloffCalculationWaveEvent(uint64 serverConnectionHandlerID, uint64 waveHandle, float
+    distance, float* volume);
+    void onUserLoggingMessageEvent(const char* logMessage, int logLevel, const char* logChannel, uint64 logID,
+    const char* logTime, const char* completeLogString);*/
+
+    /* Clientlib rare */
 	/*void onClientBanFromServerEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, uint64 time, const char* kickMessage);
 	int  onClientPokeEvent(uint64 serverConnectionHandlerID, anyID fromClientID, const char* pokerName, const char* pokerUniqueIdentity, const char* message, int ffIgnored);*/
 	virtual void on_client_self_variable_update(uint64 sch_id, int flag, const char* old_value, const char* new_value) {};

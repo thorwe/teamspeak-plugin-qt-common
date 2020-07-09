@@ -25,7 +25,7 @@ void TSServerGroups::onServerGroupListFinishedEvent()
     emit serverGroupListUpdated(serverGroups);
 }
 
-uint64 TSServerGroups::GetServerGroupId(QString name) const
+uint64 TSServerGroups::GetServerGroupId(const QString &name) const
 {
     return (serverGroups.key(name,(uint64)NULL));
 }

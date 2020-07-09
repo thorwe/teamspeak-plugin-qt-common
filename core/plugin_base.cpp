@@ -9,6 +9,8 @@
 #include "core/ts_logging_qt.h"
 #include "core/ts_settings_qt.h"
 
+#include "gsl/gsl_util"
+
 using namespace com::teamspeak::pluginsdk;
 
 Plugin_Base::Plugin_Base(const char* plugin_id, QObject *parent)
@@ -223,6 +225,17 @@ void Plugin_Base::onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID
 		on_client_move_moved(serverConnectionHandlerID, clientID, oldChannelID, newChannelID, visibility, kMyId, moverID, moverName, moverUniqueIdentifier, moveMessage);
 }
 
+int Plugin_Base::onServerError(uint64 sch_id,
+                               const char *error_message,
+                               unsigned int error,
+                               const char *return_code,
+                               const char *extra_message)
+{
+    return on_server_error(sch_id, error_message ? error_message : std::string_view{},
+                           com::teamspeak::to_ts_errc(error), return_code ? return_code : std::string_view{},
+                           extra_message ? extra_message : std::string_view{});
+}
+
 void Plugin_Base::onTalkStatusChangeEvent(uint64 serverConnectionHandlerID, int status, int isReceivedWhisper, anyID clientID)
 {
 	const auto kIsMe = talkers().onTalkStatusChangeEvent(serverConnectionHandlerID, status, isReceivedWhisper, clientID);
@@ -236,7 +249,9 @@ void Plugin_Base::onEditPlaybackVoiceDataEvent(uint64 serverConnectionHandlerID,
 
 void Plugin_Base::onEditPostProcessVoiceDataEvent(uint64 serverConnectionHandlerID, anyID clientID, short* samples, int sampleCount, int channels, const unsigned int* channelSpeakerArray, unsigned int* channelFillMask)
 {
-	on_playback_post_process(serverConnectionHandlerID, clientID, samples, sampleCount, channels, channelSpeakerArray, channelFillMask);
+    on_playback_post_process(serverConnectionHandlerID, clientID,
+                             {samples, gsl::narrow_cast<size_t>(sampleCount * channels)}, channels,
+                             channelSpeakerArray, channelFillMask);
 }
 
 void Plugin_Base::onMenuItemEvent(uint64 serverConnectionHandlerID, PluginMenuType type, int menuItemID, uint64 selectedItemID)

@@ -39,12 +39,12 @@ public:
         mutex.unlock();
     }
 
-    void Init(QString tsConfigPath);
+    void Init(const QString &tsConfigPath);
 
     bool GetSoundPack(QString& result);
     bool GetIconPack(QString& result);
     bool GetDefaultCaptureProfile(QString& result);
-    bool GetPreProcessorData(QString profile, QString& result);
+    bool GetPreProcessorData(const QString &profile, QString &result);
 
     bool GetBookmarks(QStringList &result);
     bool GetBookmarkByServerUID(QString sUID, QMap<QString,QString> &result);
@@ -66,10 +66,10 @@ private:
     TSSettings(const TSSettings &);
     TSSettings& operator=(const TSSettings &);
 
-    QMap<QString,QString> GetMapFromValue(QString value);
-    bool GetValueFromQuery(QString query, QString &result, bool isEmptyValid);
-    bool GetValuesFromQuery(QString query, QStringList &result);
-    void SetError(QString in);   //create Custom SQL Error Helper
+    QMap<QString, QString> GetMapFromValue(const QString &value);
+    bool GetValueFromQuery(const QString &query, QString &result, bool isEmptyValid);
+    bool GetValuesFromQuery(const QString &query, QStringList &result);
+    void SetError(const QString &in);  // create Custom SQL Error Helper
     QSqlError error_qsql;
 
     QSqlDatabase m_SettingsDb;

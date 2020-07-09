@@ -5,9 +5,6 @@
 #include <atomic>
 #include <cstdint>
 
-constexpr const float VOLUME_0DB = (0.0f);
-constexpr const float VOLUME_MUTED = (-200.0f);
-
 class DspVolume
 {
 
@@ -29,14 +26,17 @@ public:
     virtual void process(gsl::span<int16_t> samples, int32_t channels);
     virtual float fade_step(size_t frame_count);
 
-protected:
+    static constexpr const float kVolume0dB = 0.0f;
+    static constexpr const float kVolumeMuted = -200.0f;
+
+  protected:
     void do_process(gsl::span<int16_t> samples);
 
     std::atomic_bool   m_processing{false};
-    const uint16_t     m_sample_rate = 48000;
+    const uint16_t m_sample_rate = 48000;
 
-private:
-    std::atomic<float> m_gain_current{VOLUME_0DB};   // decibels
-    std::atomic<float> m_gain_desired{VOLUME_0DB};   // decibels
+  private:
+    std::atomic<float> m_gain_current{kVolume0dB};  // decibels
+    std::atomic<float> m_gain_desired{kVolume0dB};  // decibels
     std::atomic_bool   m_muted{false};
 };

@@ -7,6 +7,8 @@
 #include "teamspeak/public_definitions.h"
 #include "teamspeak/public_rare_definitions.h"
 
+#include "gsl/gsl_util"
+
 #include <array>
 #include <string>
 #include <vector>
@@ -30,10 +32,6 @@ constexpr const int32_t kHotkeyBufferSize = 128;
 namespace com::teamspeak::pluginsdk::funcs
 {
 
-namespace
-{
-    ts_errc to_ts_errc(uint32_t err) { return static_cast<ts_errc>(err); }
-}  // namespace
 
 /* Versioning */
 std::tuple<std::error_code, std::string> get_clientlib_version()
@@ -1947,11 +1945,12 @@ void send_plugin_command(connection_id_t connection_id,
                          std::string_view plugin_id,
                          std::string_view command,
                          int target_mode,
-                         gsl::span<client_id_t> target_ids,
+                         gsl::span<const client_id_t> target_ids,
                          std::string_view return_code /*= ""*/)
 {
     ts_funcs.sendPluginCommand(connection_id, plugin_id.data(), command.data(), target_mode,
-                               target_ids.data(), return_code.empty() ? nullptr : return_code.data());
+                               target_ids.empty() ? nullptr : target_ids.data(),
+                               return_code.empty() ? nullptr : return_code.data());
 }
 
 // TODO this is buggy in that it uses space as delimiter for the list entries
@@ -2091,7 +2090,7 @@ get_hotkey_from_keyword(std::string_view plugin_id, gsl::span<std::string_view> 
     if (ts_errc::ok == error)
     {
         for (const auto &charray : holder)
-            result.push_back(std::string(charray.data()));
+            result.emplace_back(std::string(charray.data()));
     }
     return {error, result};
 }
@@ -2114,17 +2113,18 @@ std::tuple<std::error_code, PluginBookmarkList *> get_bookmark_list()
 
 void free_bookmark_list(PluginBookmarkList *list)
 {
-    for (auto i = int32_t{0}; i < list->itemcount; ++i)
+    auto items = gsl::span<PluginBookmarkItem>{&list->items[0], gsl::narrow_cast<size_t>(list->itemcount)};
+    for (const auto &item : items)
     {
-        if (list->items[i].isFolder)
+        if (item.isFolder)
         {
-            free_bookmark_list(list->items[i].folder);
-            ts_funcs.freeMemory(list->items[i].name);
+            free_bookmark_list(item.folder);
+            ts_funcs.freeMemory(item.name);
         }
         else
         {
-            ts_funcs.freeMemory(list->items[i].name);
-            ts_funcs.freeMemory(list->items[i].uuid);
+            ts_funcs.freeMemory(item.name);
+            ts_funcs.freeMemory(item.uuid);
         }
     }
     ts_funcs.freeMemory(list);

@@ -287,6 +287,11 @@ enum class ts_errc
 #endif
 };
 
+namespace com::teamspeak
+{
+ts_errc to_ts_errc(uint32_t err);
+}
+
 namespace std
 {
 template <> struct is_error_code_enum<ts_errc> : true_type

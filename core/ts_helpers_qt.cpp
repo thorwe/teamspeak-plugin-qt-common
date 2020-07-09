@@ -88,7 +88,7 @@ QString GetLanguage()
 
 // A normal Client-Connection (Voice-Connection) has client-type 0, a
 // Query-Connection has client-type 1.
-bool is_query_client(uint64 connection_id, anyID client_id)
+bool is_query_client(connection_id_t connection_id, client_id_t client_id)
 {
     const auto [error, result] = funcs::get_client_property_as_int(connection_id, client_id, CLIENT_TYPE);
     if (ts_errc::ok != error)
@@ -98,19 +98,20 @@ bool is_query_client(uint64 connection_id, anyID client_id)
 }
 
 /*
-std::error_code GetClientUID(uint64 connection_id, anyID clientID, QString &result)
+std::error_code GetClientUID(connection_id_t connection_id, client_id_t client_id, QString &result)
 {
     const auto [error, res] =
-    funcs::get_client_property_as_string(connection_id, clientID, CLIENT_UNIQUE_IDENTIFIER);
+    funcs::get_client_property_as_string(connection_id, client_id, CLIENT_UNIQUE_IDENTIFIER);
     if (ts_errc::ok != error)
         TSLogging::Error("(TSHelpers::GetClientUID)", connection_id, error, true);
     else
         result = QString::fromUtf8(res.data());
 
     return error;
-}
+}*/
 
-std::error_code GetTalkStatus(uint64 connection_id, anyID client_id, int &status, int &is_whispering)
+std::error_code
+GetTalkStatus(connection_id_t connection_id, client_id_t client_id, int &status, int &is_whispering)
 {
     const auto [error_talk_status, talk_status] =
     funcs::get_client_property_as_int(connection_id, client_id, CLIENT_FLAG_TALKING);
@@ -134,7 +135,7 @@ std::error_code GetTalkStatus(uint64 connection_id, anyID client_id, int &status
     return ts_errc::ok;
 }
 
-std::error_code GetSubChannels(uint64 connection_id, uint64 channel_id, std::vector<uint64> &result)
+std::error_code GetSubChannels(connection_id_t connection_id, uint64 channel_id, std::vector<uint64> &result)
 {
     const auto [error_channel_ids, channel_ids] = funcs::get_channel_ids(connection_id);
     if (ts_errc::ok != error_channel_ids)
@@ -159,7 +160,7 @@ std::error_code GetSubChannels(uint64 connection_id, uint64 channel_id, std::vec
     return ts_errc::ok;
 }
 
-std::error_code GetServerHandler(QString name, uint64 *result)
+std::error_code GetServerHandler(const QString &name, connection_id_t *result)
 {
     const auto [error_connection_ids, connection_ids] = funcs::get_server_connection_handler_ids();
     if (ts_errc::ok != error_connection_ids)
@@ -239,7 +240,7 @@ uint64 GetActiveServerConnectionHandlerID()
     return active;
 }
 
-std::error_code GetActiveServerRelative(uint64 connection_id, bool next, uint64 *result)
+std::error_code GetActiveServerRelative(connection_id_t connection_id, bool next, uint64 *result)
 {
     const auto [error_connection_ids, connection_ids] = funcs::get_server_connection_handler_ids();
     if (ts_errc::ok != error_connection_ids)
@@ -274,7 +275,7 @@ std::error_code GetActiveServerRelative(uint64 connection_id, bool next, uint64 
     return ts_errc::ok;
 }
 
-int SetActiveServer(uint64 connection_id)
+int SetActiveServer(connection_id_t connection_id)
 {
     if (const auto error = funcs::sound::activate_capture_device(connection_id); ts_errc::ok != error)
     {
@@ -284,9 +285,9 @@ int SetActiveServer(uint64 connection_id)
     return 0;
 }
 
-int SetActiveServerRelative(uint64 connection_id, bool next)
+int SetActiveServerRelative(connection_id_t connection_id, bool next)
 {
-    uint64 server;
+    auto server = connection_id_t{0};
     if (const auto error = TSHelpers::GetActiveServerRelative(connection_id, next, &server);
         error != ts_errc::ok)
         return 1;
@@ -309,8 +310,8 @@ int SetActiveServerRelative(uint64 connection_id, bool next)
 namespace
 {
 
-    std::error_code GetChannelsForGroupWhisperTargetMode(uint64 connection_id,
-                                                         anyID my_id,
+    std::error_code GetChannelsForGroupWhisperTargetMode(connection_id_t connection_id,
+                                                         client_id_t my_id,
                                                          GroupWhisperTargetMode groupWhisperTargetMode,
                                                          std::vector<uint64> &target_channels)
     {
@@ -376,10 +377,10 @@ namespace
     }
 }  // namespace
 
-std::error_code SetWhisperList(uint64 connection_id,
+std::error_code SetWhisperList(connection_id_t connection_id,
                                GroupWhisperType groupWhisperType,
                                GroupWhisperTargetMode groupWhisperTargetMode,
-                               QString returnCode,
+                               std::string_view return_code,
                                uint64 arg)
 {
     const auto [error_my_id, my_id] = funcs::get_client_id(connection_id);
@@ -390,7 +391,7 @@ std::error_code SetWhisperList(uint64 connection_id,
     }
 
     // GroupWhisperTargetMode
-    std::vector<anyID> target_client_ids;
+    std::vector<client_id_t> target_client_ids;
     std::vector<uint64> target_channel_ids;
 
     if (groupWhisperTargetMode == GROUPWHISPERTARGETMODE_ALL)  // Get client list
@@ -434,7 +435,7 @@ std::error_code SetWhisperList(uint64 connection_id,
         }
 
         // Do the GroupWhisperType filtering
-        std::vector<anyID> filtered_client_ids;
+        std::vector<client_id_t> filtered_client_ids;
         if (groupWhisperType == GROUPWHISPERTYPE_SERVERGROUP)
         {
             if (arg == (uint64) NULL)
@@ -467,7 +468,7 @@ std::error_code SetWhisperList(uint64 connection_id,
 
             for (const auto target_client_id : target_client_ids)
             {
-                uint64 channelGroup;
+                auto channelGroup = permission_group_id_t{0};
                 if (const auto error = GetClientChannelGroup(connection_id, &channelGroup, target_client_id);
                     error)
                     break;
@@ -530,15 +531,14 @@ std::error_code SetWhisperList(uint64 connection_id,
             TSLogging::Log(log_str.toLocal8Bit().constData(), connection_id, LogLevel_DEBUG);
         }
 
-        const auto error = funcs::request_client_set_whisperlist(
-        connection_id, my_id, target_channel_ids, target_client_ids,
-        (returnCode.isEmpty()) ? "" : returnCode.toLocal8Bit().constData());
+        const auto error = funcs::request_client_set_whisperlist(connection_id, my_id, target_channel_ids,
+                                                                 target_client_ids, return_code);
 
-        if (error || (returnCode.isEmpty()))
+        if (error || (return_code.empty()))
             return error;
 
-        // Bandaid for requestClientSetWhisperList NOT calling back when returnCode set. For waffle's sake!
-        return funcs::request_client_properties(connection_id, my_id, returnCode.toLocal8Bit().constData());
+        // Bandaid for requestClientSetWhisperList NOT calling back when return_code set. For waffle's sake!
+        return funcs::request_client_properties(connection_id, my_id, return_code.data());
     }
 }
 
@@ -553,7 +553,8 @@ std::error_code GetDefaultProfile(PluginGuiProfile profile, QString &result)
     return error;
 }
 
-std::error_code GetClientServerGroups(uint64 connection_id, anyID client_id, QSet<uint64> *result)
+std::error_code
+GetClientServerGroups(connection_id_t connection_id, client_id_t client_id, QSet<uint64> *result)
 {
     const auto [error, server_groups_s] =
     funcs::get_client_property_as_string(connection_id, client_id, CLIENT_SERVERGROUPS);
@@ -563,7 +564,7 @@ std::error_code GetClientServerGroups(uint64 connection_id, anyID client_id, QSe
         bool ok;
         while (!qsl_result.isEmpty())
         {
-            *result << qsl_result.takeFirst().toInt(&ok, 10);
+            *result << qsl_result.takeFirst().toInt(&ok);
             if (!ok)
             {
                 TSLogging::Error("Error converting Server Group to int");
@@ -574,7 +575,7 @@ std::error_code GetClientServerGroups(uint64 connection_id, anyID client_id, QSe
     return error;
 }
 
-std::error_code GetClientSelfServerGroups(uint64 connection_id, QSet<uint64> *result)
+std::error_code GetClientSelfServerGroups(connection_id_t connection_id, QSet<uint64> *result)
 {
     const auto [error_my_id, my_id] = funcs::get_client_id(connection_id);
     if (ts_errc::ok != error_my_id)
@@ -586,9 +587,9 @@ std::error_code GetClientSelfServerGroups(uint64 connection_id, QSet<uint64> *re
     return GetClientServerGroups(connection_id, my_id, result);
 }
 
-std::error_code GetClientChannelGroup(uint64 connection_id, uint64 *result, anyID clientId)
+std::error_code GetClientChannelGroup(connection_id_t connection_id, uint64 *result, client_id_t client_id)
 {
-    if (0 == clientId)  // use my id
+    if (0 == client_id)  // use my id
     {
         const auto [error_my_id, my_id] = funcs::get_client_id(connection_id);
         if (ts_errc::ok != error_my_id)
@@ -599,7 +600,7 @@ std::error_code GetClientChannelGroup(uint64 connection_id, uint64 *result, anyI
     }
 
     const auto [error_channel_group_id, channel_group_id] =
-    funcs::get_client_property_as_int(connection_id, clientId, CLIENT_CHANNEL_GROUP_ID);
+    funcs::get_client_property_as_int(connection_id, client_id, CLIENT_CHANNEL_GROUP_ID);
     if (ts_errc::ok != error_channel_group_id)
         TSLogging::Error("(GetClientChannelGroup)", connection_id, error_channel_group_id, true);
     else
@@ -641,8 +642,9 @@ bool GetCreatePluginConfigFolder(QDir &result)
     return isPathOk;
 }
 
-QString
-GetChannelVariableAsQString(uint64 connection_id, uint64 channel_id, ChannelProperties channel_property)
+QString GetChannelVariableAsQString(connection_id_t connection_id,
+                                    uint64 channel_id,
+                                    ChannelProperties channel_property)
 {
     const auto [error, result] =
     funcs::get_channel_property_as_string(connection_id, channel_id, channel_property);
@@ -655,7 +657,7 @@ GetChannelVariableAsQString(uint64 connection_id, uint64 channel_id, ChannelProp
 }
 
 // Note that we have the convention of the delimiter "__CH_DELIM__" here and with GetChannelIDFromPath
-QString GetChannelPath(uint64 connection_id, uint64 channel_id)
+QString GetChannelPath(connection_id_t connection_id, uint64 channel_id)
 {
     QString path = QString::null;
     while (true)
@@ -680,10 +682,11 @@ QString GetChannelPath(uint64 connection_id, uint64 channel_id)
 }
 
 // Note that we have the convention of the delimiter "__CH_DELIM__" here and with GetChannelPath
-uint64 GetChannelIDFromPath(uint64 connection_id, QString path_q)
+uint64 GetChannelIDFromPath(connection_id_t connection_id, const QString &path_q)
 {
     std::vector<std::string> channel_names;
-    for (const auto &channel_name : path_q.split("__CH_DELIM__"))
+    const auto split_list = path_q.split("__CH_DELIM__");
+    for (const auto &channel_name : split_list)
         channel_names.emplace_back(channel_name.toUtf8().constData());
 
     const auto [error, channel_id] = funcs::get_channel_id_from_channel_names(connection_id, channel_names);
@@ -695,5 +698,6 @@ uint64 GetChannelIDFromPath(uint64 connection_id, QString path_q)
     }
 
     return channel_id;
-}*/
+}
+
 }  // namespace TSHelpers

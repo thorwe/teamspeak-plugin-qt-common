@@ -5,7 +5,7 @@
 
 TSSettings *TSSettings::m_Instance = nullptr;
 
-void TSSettings::Init(QString tsConfigPath)
+void TSSettings::Init(const QString &tsConfigPath)
 {
     const auto name = QString(ts3plugin_name()).simplified().append("_SetDbConn");
     m_SettingsDb = QSqlDatabase::addDatabase("QSQLITE", name);
@@ -76,7 +76,7 @@ bool TSSettings::GetDefaultCaptureProfile(QString &result)
  * \param result the result will be put in here
  * \return true on success, false when an error has occurred
  */
-bool TSSettings::GetPreProcessorData(QString profile, QString &result)
+bool TSSettings::GetPreProcessorData(const QString &profile, QString &result)
 {
     QString query("SELECT value FROM Profiles WHERE key='Capture/" + profile + "/PreProcessing'");
     if (!(GetValueFromQuery(query, result, false)))
@@ -229,7 +229,7 @@ QSqlError TSSettings::GetLastError()
  * \param value the value
  * \return a QMap
  */
-QMap<QString, QString> TSSettings::GetMapFromValue(QString value)
+QMap<QString, QString> TSSettings::GetMapFromValue(const QString &value)
 {
     QMap<QString, QString> result;
     auto qstrl_value = value.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
@@ -249,7 +249,9 @@ QMap<QString, QString> TSSettings::GetMapFromValue(QString value)
  * \param isEmptyValid determines, if an empty result is considered an error
  * \return true on success, false when an error has occurred
  */
-bool TSSettings::GetValueFromQuery(QString query, QString &result, bool isEmptyValid)  // provides first valid
+bool TSSettings::GetValueFromQuery(const QString &query,
+                                   QString &result,
+                                   bool isEmptyValid)  // provides first valid
 {
     QSqlQuery q_query(query, m_SettingsDb);
     if (!q_query.exec())
@@ -344,7 +346,7 @@ bool TSSettings::GetValueFromQuery(QString query, QString &result, bool isEmptyV
  * \param result the result will be put in here
  * \return true on success, false when an error has occurred
  */
-bool TSSettings::GetValuesFromQuery(QString query, QStringList &result)  // proper result list
+bool TSSettings::GetValuesFromQuery(const QString &query, QStringList &result)  // proper result list
 {
     QSqlQuery q_query(query, m_SettingsDb);
     if (!q_query.exec())
@@ -405,7 +407,7 @@ bool TSSettings::GetValuesFromQuery(QString query, QStringList &result)  // prop
  * \brief TSSettings::SetError encapsulates an error string in a sql error
  * \param in the QString to put into the errors DriverText
  */
-void TSSettings::SetError(QString in)
+void TSSettings::SetError(const QString &in)
 {
     QSqlError sql_error;
     // sql_error.setType(-1); //Cannot manually set to "Cannot be determined"(-1) since out of ErrorType enum,

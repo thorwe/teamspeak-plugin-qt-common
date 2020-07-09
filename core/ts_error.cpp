@@ -2,13 +2,21 @@
 
 #include "core/ts_functions.h"
 
+namespace com::teamspeak
+{
+ts_errc to_ts_errc(uint32_t err)
+{
+    return static_cast<ts_errc>(err);
+}
+}  // namespace com::teamspeak
+
 namespace
-{  // anonymous namespace
+{
 
 struct TsErrCategory : std::error_category
 {
-    const char *name() const noexcept override;
-    std::string message(int ev) const override;
+    [[nodiscard]] const char *name() const noexcept override;
+    [[nodiscard]] std::string message(int ev) const override;
 };
 
 const char *TsErrCategory::name() const noexcept

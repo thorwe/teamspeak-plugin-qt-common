@@ -17,7 +17,7 @@ public:
     void onServerGroupListEvent(uint64 serverGroupID, const char* name, int type, int iconID, int saveDB);
     void onServerGroupListFinishedEvent();
 
-    uint64 GetServerGroupId(QString name) const;
+    uint64 GetServerGroupId(const QString &name) const;
     QString GetServerGroupName(uint64 id) const;
 
 signals:

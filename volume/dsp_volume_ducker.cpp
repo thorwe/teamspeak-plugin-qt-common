@@ -7,10 +7,10 @@ void DspVolumeDucker::set_processing(bool val)
         if (gain_adjustment())
             set_gain_current(gain_desired());
         else
-            set_gain_current(VOLUME_0DB);
+            set_gain_current(kVolume0dB);
     }
     else
-        set_gain_current(VOLUME_0DB);
+        set_gain_current(kVolume0dB);
 
     m_processing.store(val);
 }
@@ -22,7 +22,7 @@ float DspVolumeDucker::fade_step(size_t frame_count)
     // compute ducker gain
     float current_gain = gain_current();
     if (is_duck_blocked() || muted())
-        current_gain = VOLUME_0DB;
+        current_gain = kVolume0dB;
     else
     {
         const auto gain_adjustment = m_gain_adjustment.load();
@@ -40,15 +40,15 @@ float DspVolumeDucker::fade_step(size_t frame_count)
             else
                 current_gain = desired_gain;
         }
-        else if ((!gain_adjustment) && (current_gain != VOLUME_0DB))    // is releasing
+        else if ((!gain_adjustment) && (current_gain != kVolume0dB))  // is releasing
         {
             float fade_step = (decay_rate / m_sample_rate) * frame_count;
-            if (current_gain < VOLUME_0DB - fade_step)
+            if (current_gain < kVolume0dB - fade_step)
                 current_gain += fade_step;
-            else if (current_gain > VOLUME_0DB + fade_step)
+            else if (current_gain > kVolume0dB + fade_step)
                 current_gain -= fade_step;
             else
-                current_gain = VOLUME_0DB;
+                current_gain = kVolume0dB;
         }
     }
     return current_gain;

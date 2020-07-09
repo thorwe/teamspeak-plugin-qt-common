@@ -13,7 +13,7 @@ public:
 	explicit TSServersInfo(QObject* parent = nullptr);
     
     TSServerInfo* get_server_info(uint64 server_connection_id, bool create_on_not_exist = false);
-    uint64 find_server_by_unique_id(QString server_id);
+    uint64 find_server_by_unique_id(const QString &server_id);
 
     // forwarded from plugin.cpp
     void onConnectStatusChangeEvent(uint64 server_connection_id, int new_status, unsigned int error_number);

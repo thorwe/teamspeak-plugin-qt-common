@@ -2,10 +2,11 @@
 
 #include "volume/db.h"
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
-const float GAIN_FADE_RATE = (400.0F);	// Rate to fade at (dB per second)
+constexpr const float kGainFadeRate = 400.0F;  // Rate to fade at (dB per second)
 
 void DspVolume::process(gsl::span<int16_t> samples, int32_t channels)
 {
@@ -21,17 +22,17 @@ float DspVolume::fade_step(size_t frame_count)
     const auto desired_gain = gain_desired();
     if (muted())
     {
-        float fade_step = (GAIN_FADE_RATE / m_sample_rate) * frame_count;
-        if (current_gain < VOLUME_MUTED - fade_step)
+        float fade_step = (kGainFadeRate / m_sample_rate) * frame_count;
+        if (current_gain < kVolumeMuted - fade_step)
             current_gain += fade_step;
-        else if (current_gain > VOLUME_MUTED + fade_step)
+        else if (current_gain > kVolumeMuted + fade_step)
             current_gain -= fade_step;
         else
-            current_gain = VOLUME_MUTED;
+            current_gain = kVolumeMuted;
     }
     else if (current_gain != desired_gain)
     {
-        float fade_step = (GAIN_FADE_RATE / m_sample_rate) * frame_count;
+        float fade_step = (kGainFadeRate / m_sample_rate) * frame_count;
         if (current_gain < desired_gain - fade_step)
             current_gain += fade_step;
         else if (current_gain > desired_gain + fade_step)
@@ -49,12 +50,8 @@ void DspVolume::do_process(gsl::span<int16_t> samples)
     const auto samples_size = samples.size();
     for (auto i = decltype(samples_size){0}; i < samples_size; ++i)
     {
-        const auto temp = lround(samples[i] * mix_gain);
-        if (temp < std::numeric_limits<int16_t>::min())
-            samples[i] = std::numeric_limits<int16_t>::min();
-        else if (temp > std::numeric_limits<int16_t>::max())
-            samples[i] = std::numeric_limits<int16_t>::max();
-        else
-            samples[i] = static_cast<int16_t>(temp);
+        samples[i] = static_cast<int16_t>(std::clamp<int32_t>(lround(samples[i] * mix_gain),
+                                                              std::numeric_limits<int16_t>::min(),
+                                                              std::numeric_limits<int16_t>::max()));
     }
 }

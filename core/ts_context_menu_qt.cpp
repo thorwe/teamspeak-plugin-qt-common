@@ -12,7 +12,7 @@
 /* Helper function to create a menu item */
 static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, const char* text, const char* icon)
 {
-    struct PluginMenuItem* menuItem = (struct PluginMenuItem*)malloc(sizeof(struct PluginMenuItem));
+    auto* menuItem = (struct PluginMenuItem*)malloc(sizeof(struct PluginMenuItem));
     menuItem->type = type;
     menuItem->id = id;
     qstrncpy(menuItem->text, text, PLUGIN_MENU_BUFSZ);
@@ -31,7 +31,7 @@ TSContextMenu::TSContextMenu(Plugin_Base* plugin)
 {
 }
 
-bool TSContextMenu::setMainIcon(QString icon)
+bool TSContextMenu::setMainIcon(const QString &icon)
 {
     if (m_isInit)
         return false;
@@ -40,7 +40,7 @@ bool TSContextMenu::setMainIcon(QString icon)
     return true;
 }
 
-int TSContextMenu::Register(QObject* p, PluginMenuType type, QString text, QString icon)
+int TSContextMenu::Register(QObject *p, PluginMenuType type, const QString &text, const QString &icon)
 {
     Q_UNUSED(p);
 

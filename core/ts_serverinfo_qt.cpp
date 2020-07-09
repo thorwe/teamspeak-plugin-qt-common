@@ -55,7 +55,7 @@ uint64 TSServerInfo::getDefaultChannelGroup() const
     return default_channel_group;
 }
 
-uint64 TSServerInfo::GetServerGroupId(QString name) const
+uint64 TSServerInfo::GetServerGroupId(const QString &name) const
 {
     return (m_server_groups.key(name, (uint64)NULL));
 }
@@ -68,7 +68,7 @@ QString TSServerInfo::GetServerGroupName(uint64 id) const
     return QString::null;
 }
 
-uint64 TSServerInfo::GetChannelGroupId(QString name) const
+uint64 TSServerInfo::GetChannelGroupId(const QString &name) const
 {
     const auto list = m_channel_groups.keys(name);
     const auto element_count = list.size();

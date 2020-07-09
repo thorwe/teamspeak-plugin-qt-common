@@ -111,7 +111,7 @@ void TSLogging::Error(QString message, uint64 connection_id, std::error_code err
     funcs::print_message(connection_id, styledQstr.toLocal8Bit().constData(), PLUGIN_MESSAGE_TARGET_SERVER);
 }
 
-void TSLogging::Print(QString message, uint64 connection_id, LogLevel logLevel)
+void TSLogging::Print(const QString &message, uint64 connection_id, LogLevel logLevel)
 {
 #ifndef CONSOLE_OUTPUT
     Q_UNUSED(message);
@@ -151,7 +151,7 @@ void TSLogging::Print(QString message, uint64 connection_id, LogLevel logLevel)
 #endif
 }
 
-void TSLogging::Log(QString message, uint64 connection_id, LogLevel logLevel)
+void TSLogging::Log(const QString &message, uint64 connection_id, LogLevel logLevel)
 {
     funcs::log_message(message.toLocal8Bit().constData(), logLevel, ts3plugin_name(), connection_id);
 }
