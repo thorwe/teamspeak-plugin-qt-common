@@ -26,6 +26,13 @@ class Talkers : public QObject
   public:
     Talkers(QObject *parent = nullptr);
 
+    struct Talkers_Info
+    {
+        com::teamspeak::connection_id_t connection_id{0};
+        com::teamspeak::client_id_t client_id{0};
+        bool is_whispering{false};
+    };
+
     bool onTalkStatusChangeEvent(com::teamspeak::connection_id_t connection_id,
                                  int status,
                                  int is_received_whisper,
@@ -44,16 +51,18 @@ class Talkers : public QObject
 
     void DumpTalkStatusChanges(QObject *p, int status);
 
+    enum class Talker_Type
+    {
+        All = 0,
+        Talkers,
+        Whisperers
+    };
+    std::vector<Talkers_Info> get_infos(Talker_Type talker_type = Talker_Type::All,
+                                        com::teamspeak::connection_id_t connection_id = 0) const;
+
   private:
     com::teamspeak::connection_id_t m_me_talking_connection_id = 0;
     bool m_me_talking_is_whisper{false};
-
-    struct Talkers_Info
-    {
-        com::teamspeak::connection_id_t connection_id{0};
-        com::teamspeak::client_id_t client_id{0};
-        bool is_whispering{false};
-    };
 
     std::vector<Talkers_Info> m_talkers;
 

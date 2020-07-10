@@ -111,6 +111,32 @@ void Talkers::DumpTalkStatusChanges(QObject *p, int status)
     }
 }
 
+std::vector<Talkers::Talkers_Info> Talkers::get_infos(Talker_Type talker_type,
+                                                      com::teamspeak::connection_id_t connection_id) const
+{
+    auto lock = std::shared_lock<decltype(m_mutex)>{};
+    auto result = std::vector<Talkers::Talkers_Info>{};
+    std::copy_if(std::cbegin(m_talkers), std::cend(m_talkers), std::begin(result),
+                 [talker_type, connection_id](const auto &entry) {
+                     if (!(connection_id == 0 || connection_id == entry.connection_id))
+                         return false;
+
+                     switch (talker_type)
+                     {
+                     case Talker_Type::All:
+                         return true;
+                     case Talker_Type::Talkers:
+                         return !entry.is_whispering;
+                     case Talker_Type::Whisperers:
+                         return entry.is_whispering;
+                     default:
+                         break;
+                     }
+                     return false;
+                 });
+    return result;
+}
+
 bool Talkers::onTalkStatusChangeEvent(com::teamspeak::connection_id_t connection_id,
                                       int status,
                                       int is_received_whisper,
