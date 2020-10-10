@@ -23,13 +23,13 @@ template <typename T = DspVolume> class Volumes final : public Safe_Client_Stora
   public:
     std::pair<T *, bool> add_volume(connection_id_t connection_id, client_id_t client_id)
     {
-        return add_item(connection_id, client_id, std::make_unique<T>());
+        return this->add_item(connection_id, client_id, std::make_unique<T>());
     }
 
     void onConnectStatusChanged(connection_id_t connection_id, int new_status, unsigned int /*error_number*/)
     {
         if (ConnectStatus::STATUS_DISCONNECTED == new_status)
-            delete_items(connection_id);
+            this->delete_items(connection_id);
     }
 };
 
