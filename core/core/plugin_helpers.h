@@ -2,9 +2,12 @@
 
 #include <filesystem>
 
-namespace teamspeak::plugin
+namespace teamspeak
 {
-    enum class Path {
+namespace plugin
+{
+    enum class Path
+    {
         App = 0,
         Config,
         Resources,
@@ -12,4 +15,5 @@ namespace teamspeak::plugin
     };
 
     std::filesystem::path get_path(Path path);
-}
+}  // namespace plugin
+}  // namespace teamspeak

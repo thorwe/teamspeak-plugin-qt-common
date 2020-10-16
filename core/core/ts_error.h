@@ -287,10 +287,13 @@ enum class ts_errc
 #endif
 };
 
-namespace com::teamspeak
+namespace com
 {
-ts_errc to_ts_errc(uint32_t err);
+namespace teamspeak
+{
+    ts_errc to_ts_errc(uint32_t err);
 }
+}  // namespace com
 
 namespace std
 {
