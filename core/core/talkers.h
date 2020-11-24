@@ -67,5 +67,5 @@ class Talkers : public QObject
     std::vector<Talkers_Info> m_talkers;
 
     // protects the m_talkers and m_me... states)
-    std::shared_mutex m_mutex;
+    mutable std::shared_mutex m_mutex;
 };

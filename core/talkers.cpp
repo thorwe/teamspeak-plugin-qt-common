@@ -6,6 +6,7 @@
 #include "plugin.h"
 
 #include <algorithm>
+#include <iterator>
 
 using namespace com::teamspeak::pluginsdk;
 
@@ -88,7 +89,7 @@ void Talkers::DumpTalkStatusChanges(QObject *p, int status)
     }
 
     {
-        auto lock = std::shared_lock<decltype(m_mutex)>{};
+        auto lock = std::shared_lock(m_mutex);
         {
             for (const auto &talker : m_talkers)
             {
@@ -114,9 +115,9 @@ void Talkers::DumpTalkStatusChanges(QObject *p, int status)
 std::vector<Talkers::Talkers_Info> Talkers::get_infos(Talker_Type talker_type,
                                                       com::teamspeak::connection_id_t connection_id) const
 {
-    auto lock = std::shared_lock<decltype(m_mutex)>{};
+    auto lock = std::shared_lock(m_mutex);
     auto result = std::vector<Talkers::Talkers_Info>{};
-    std::copy_if(std::cbegin(m_talkers), std::cend(m_talkers), std::begin(result),
+    std::copy_if(std::cbegin(m_talkers), std::cend(m_talkers), std::back_inserter(result),
                  [talker_type, connection_id](const auto &entry) {
                      if (!(connection_id == 0 || connection_id == entry.connection_id))
                          return false;
@@ -150,7 +151,7 @@ bool Talkers::onTalkStatusChangeEvent(com::teamspeak::connection_id_t connection
     }
 
     {
-        auto lock = std::unique_lock<decltype(m_mutex)>{};
+        auto lock = std::unique_lock(m_mutex);
         if (my_id == client_id)
         {
             m_me_talking_is_whisper = is_received_whisper;
@@ -202,7 +203,7 @@ void Talkers::onConnectStatusChangeEvent(com::teamspeak::connection_id_t connect
     auto fake_end = decltype(m_talkers){};
     if (new_status == STATUS_DISCONNECTED)
     {
-        auto lock = std::unique_lock<decltype(m_mutex)>{};
+        auto lock = std::unique_lock(m_mutex);
         std::remove_copy_if(
         std::begin(m_talkers), std::end(m_talkers), std::begin(fake_end),
         [connection_id](const auto &talker) { return talker.connection_id != connection_id; });
@@ -214,6 +215,6 @@ void Talkers::onConnectStatusChangeEvent(com::teamspeak::connection_id_t connect
 
 com::teamspeak::connection_id_t Talkers::isMeTalking() const
 {
-    auto lock = std::shared_lock<decltype(m_mutex)>{};
+    auto lock = std::shared_lock(m_mutex);
     return m_me_talking_connection_id;
 }
