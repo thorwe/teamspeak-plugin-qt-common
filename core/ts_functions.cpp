@@ -34,7 +34,7 @@ namespace com::teamspeak::pluginsdk::funcs
 
 
 /* Versioning */
-std::tuple<std::error_code, std::string> get_clientlib_version()
+auto get_clientlib_version() -> std::tuple<std::error_code, std::string>
 {
     std::string result;
     char *result_c = nullptr;
@@ -47,34 +47,34 @@ std::tuple<std::error_code, std::string> get_clientlib_version()
     return {error, result};
 }
 
-std::tuple<std::error_code, uint64_t> get_clientlib_version_number()
+auto get_clientlib_version_number() -> std::tuple<std::error_code, uint64_t>
 {
     uint64_t result = 0;
     const auto error = to_ts_errc(ts_funcs.getClientLibVersionNumber(&result));
     return {error, result};
 }
 
-std::string get_plugin_version(bool with_api)
+auto get_plugin_version(bool with_api) -> std::string
 {
     auto ver = std::string(ts3plugin_version());
     auto api = std::to_string(ts3plugin_apiVersion());
     return ver + (with_api ? " (API " + api + ")" : "");
 }
 
-std::tuple<std::error_code, connection_id_t> spawn_connection(int32_t port)
+auto spawn_connection(int32_t port) -> std::tuple<std::error_code, connection_id_t>
 {
     auto result = connection_id_t{0};
     const auto error = to_ts_errc(ts_funcs.spawnNewServerConnectionHandler(port, &result));
     return {error, result};
 }
 
-std::error_code destroy_connection(connection_id_t connection_id)
+auto destroy_connection(connection_id_t connection_id) -> std::error_code
 {
     return to_ts_errc(ts_funcs.destroyServerConnectionHandler(connection_id));
 }
 
 /* Error handling */
-std::string get_error_message(int32_t error_code)
+auto get_error_message(int32_t error_code) -> std::string
 {
     std::string result;
     char *result_c = nullptr;
@@ -90,10 +90,10 @@ std::string get_error_message(int32_t error_code)
 }
 
 /* Logging */
-std::error_code log_message(std::string_view message,
-                            LogLevel severity /*= LogLevel_INFO*/,
-                            std::string_view channel /*= {}*/,
-                            uint64_t log_id /*= 0*/)
+auto log_message(std::string_view message,
+                 LogLevel severity /*= LogLevel_INFO*/,
+                 std::string_view channel /*= {}*/,
+                 uint64_t log_id /*= 0*/) -> std::error_code
 {
     if (message.empty())
         return ts_errc::parameter_invalid;
@@ -106,7 +106,7 @@ std::error_code log_message(std::string_view message,
 namespace sound
 {
 
-    std::tuple<std::error_code, std::string> get_default_mode(IO io)
+    auto get_default_mode(IO io) -> std::tuple<std::error_code, std::string>
     {
         auto error = ts_errc::parameter_invalid;
         char *result_c = nullptr;
@@ -120,7 +120,7 @@ namespace sound
         return {error, result};
     }
 
-    std::tuple<std::error_code, std::vector<std::string>> get_modes(IO io)
+    auto get_modes(IO io) -> std::tuple<std::error_code, std::vector<std::string>>
     {
         auto error = ts_errc::parameter_invalid;
 
@@ -143,7 +143,7 @@ namespace sound
         return {error, result};
     }
 
-    std::tuple<std::error_code, Audio_Device_Ident> getDefaultDevice(IO io)
+    auto getDefaultDevice(IO io) -> std::tuple<std::error_code, Audio_Device_Ident>
     {
         Audio_Device_Ident ident;
         const auto [error_default_mode, default_mode] = get_default_mode(io);
@@ -171,8 +171,8 @@ namespace sound
         return {error, ident};
     }
 
-    std::tuple<std::error_code, std::vector<Audio_Device_Ident>> get_devices(IO io,
-                                                                             std::string_view mode_id /*=""*/)
+    auto get_devices(IO io, std::string_view mode_id /*=""*/)
+    -> std::tuple<std::error_code, std::vector<Audio_Device_Ident>>
     {
         auto mode_id_ = std::string{mode_id};
         if (mode_id.empty())
@@ -212,8 +212,9 @@ namespace sound
         return {error, result};
     }
 
-    std::error_code
+    auto
     open_device(connection_id_t connection_id, IO io, std::string_view mode_id, std::string_view device_id)
+    -> std::error_code
     {
         auto error = ts_errc::parameter_invalid;
         if (IO::Out == io)
@@ -224,7 +225,7 @@ namespace sound
         return error;
     }
 
-    std::tuple<std::error_code, std::string> get_current_mode(connection_id_t connection_id, IO io)
+    auto get_current_mode(connection_id_t connection_id, IO io) -> std::tuple<std::error_code, std::string>
     {
         char *result_c = nullptr;
         auto error = ts_errc::parameter_invalid;
@@ -238,8 +239,8 @@ namespace sound
         return {error, result};
     }
 
-    std::tuple<std::error_code, std::string, bool> get_current_device_name(connection_id_t connection_id,
-                                                                           IO io)
+    auto get_current_device_name(connection_id_t connection_id, IO io)
+    -> std::tuple<std::error_code, std::string, bool>
     {
         char *result_c = nullptr;
         auto error = ts_errc::parameter_invalid;
@@ -254,7 +255,7 @@ namespace sound
         return {error, result, !!is_default};
     }
 
-    std::error_code close_device(connection_id_t connection_id, IO io, bool graceful)
+    auto close_device(connection_id_t connection_id, IO io, bool graceful) -> std::error_code
     {
         auto error = ts_errc::parameter_invalid;
         if (IO::Out == io)
@@ -270,13 +271,13 @@ namespace sound
         return error;
     }
 
-    std::error_code activate_capture_device(connection_id_t connection_id)
+    auto activate_capture_device(connection_id_t connection_id) -> std::error_code
     {
         return to_ts_errc(ts_funcs.activateCaptureDevice(connection_id));
     }
 
-    std::tuple<std::error_code, uint64_t>
-    play_wave_file_handle(connection_id_t connection_id, std::string_view path, bool loop)
+    auto play_wave_file_handle(connection_id_t connection_id, std::string_view path, bool loop)
+    -> std::tuple<std::error_code, uint64_t>
     {
         uint64_t handle = 0;
         const auto error =
@@ -284,54 +285,56 @@ namespace sound
         return {error, handle};
     }
 
-    std::error_code pause_wave_file_handle(connection_id_t connection_id, uint64_t wave_handle, bool pause)
+    auto pause_wave_file_handle(connection_id_t connection_id, uint64_t wave_handle, bool pause)
+    -> std::error_code
     {
         return to_ts_errc(ts_funcs.pauseWaveFileHandle(connection_id, wave_handle, pause ? 1 : 0));
     }
 
-    std::error_code close_wave_file_handle(connection_id_t connection_id, uint64_t wave_handle)
+    auto close_wave_file_handle(connection_id_t connection_id, uint64_t wave_handle) -> std::error_code
     {
         return to_ts_errc(ts_funcs.closeWaveFileHandle(connection_id, wave_handle));
     }
 
-    std::error_code play_wave_file(connection_id_t connection_id, std::string_view path)
+    auto play_wave_file(connection_id_t connection_id, std::string_view path) -> std::error_code
     {
         return to_ts_errc(ts_funcs.playWaveFile(connection_id, path.data()));
     }
 
-    std::error_code register_custom_device(std::string_view device_id,
-                                           std::string_view device_name,
-                                           int32_t capture_sample_rate,
-                                           int32_t capture_channels,
-                                           int32_t playback_sample_rate,
-                                           int32_t playback_channels)
+    auto register_custom_device(std::string_view device_id,
+                                std::string_view device_name,
+                                int32_t capture_sample_rate,
+                                int32_t capture_channels,
+                                int32_t playback_sample_rate,
+                                int32_t playback_channels) -> std::error_code
     {
         return to_ts_errc(ts_funcs.registerCustomDevice(device_id.data(), device_name.data(),
                                                         capture_sample_rate, capture_channels,
                                                         playback_sample_rate, playback_channels));
     }
 
-    std::error_code unregister_custom_device(std::string_view device_id)
+    auto unregister_custom_device(std::string_view device_id) -> std::error_code
     {
         return to_ts_errc(ts_funcs.unregisterCustomDevice(device_id.data()));
     }
 
     // TODO device NAME? really? Also: samples if frame_count(?), cannot do span yet due to that
-    std::error_code
-    process_custom_capture_data(std::string_view device_name, const short *buffer, int32_t samples)
+    auto process_custom_capture_data(std::string_view device_name, const short *buffer, int32_t samples)
+    -> std::error_code
     {
         return to_ts_errc(ts_funcs.processCustomCaptureData(device_name.data(), buffer, samples));
     }
 
     // TODO device NAME? really? Also: samples if frame_count(?), cannot do span yet due to that
-    std::error_code acquire_custom_playback_data(std::string_view device_name, short *buffer, int32_t samples)
+    auto acquire_custom_playback_data(std::string_view device_name, short *buffer, int32_t samples)
+    -> std::error_code
     {
         return to_ts_errc(ts_funcs.acquireCustomPlaybackData(device_name.data(), buffer, samples));
     }
 
     /* Preprocessor */
-    std::tuple<std::error_code, float> get_preprocessor_info_value_float(connection_id_t connection_id,
-                                                                         std::string_view ident)
+    auto get_preprocessor_info_value_float(connection_id_t connection_id, std::string_view ident)
+    -> std::tuple<std::error_code, float>
     {
         float result = 0.f;
         const auto error =
@@ -339,8 +342,8 @@ namespace sound
         return {error, result};
     }
 
-    std::tuple<std::error_code, std::string> get_preprocessor_config_value(connection_id_t connection_id,
-                                                                           std::string_view ident)
+    auto get_preprocessor_config_value(connection_id_t connection_id, std::string_view ident)
+    -> std::tuple<std::error_code, std::string>
     {
         char *result_c = nullptr;
         const auto error =
@@ -354,16 +357,16 @@ namespace sound
         return {error, result};
     }
 
-    std::error_code set_preprocessor_config_value(connection_id_t connection_id,
-                                                  std::string_view ident,
-                                                  std::string_view value)
+    auto set_preprocessor_config_value(connection_id_t connection_id,
+                                       std::string_view ident,
+                                       std::string_view value) -> std::error_code
     {
         return to_ts_errc(ts_funcs.setPreProcessorConfigValue(connection_id, ident.data(), value.data()));
     }
 
     /* Encoder */
-    std::tuple<std::error_code, std::string> get_encode_config_value(connection_id_t connection_id,
-                                                                     std::string_view ident)
+    auto get_encode_config_value(connection_id_t connection_id, std::string_view ident)
+    -> std::tuple<std::error_code, std::string>
     {
         char *result_c = nullptr;
         const auto error = to_ts_errc(ts_funcs.getEncodeConfigValue(connection_id, ident.data(), &result_c));
@@ -377,8 +380,8 @@ namespace sound
     }
 
     /* Playback */
-    std::tuple<std::error_code, float> get_playback_config_value_as_float(connection_id_t connection_id,
-                                                                          std::string_view ident)
+    auto get_playback_config_value_as_float(connection_id_t connection_id, std::string_view ident)
+    -> std::tuple<std::error_code, float>
     {
         float result = 0.f;
         const auto error =
@@ -386,20 +389,21 @@ namespace sound
         return {error, result};
     }
 
-    std::error_code
-    set_playback_config_value(connection_id_t connection_id, std::string_view ident, std::string_view value)
+    auto set_playback_config_value(connection_id_t connection_id,
+                                   std::string_view ident,
+                                   std::string_view value) -> std::error_code
     {
         return to_ts_errc(ts_funcs.setPlaybackConfigValue(connection_id, ident.data(), value.data()));
     }
 
-    std::error_code
-    set_client_volume_modifier(connection_id_t connection_id, client_id_t client_id, float value)
+    auto set_client_volume_modifier(connection_id_t connection_id, client_id_t client_id, float value)
+    -> std::error_code
     {
         return to_ts_errc(ts_funcs.setClientVolumeModifier(connection_id, client_id, value));
     }
 
     /* Recording */
-    std::error_code set_voice_recording(connection_id_t connection_id, bool on_off)
+    auto set_voice_recording(connection_id_t connection_id, bool on_off) -> std::error_code
     {
         if (on_off)
             return to_ts_errc(ts_funcs.startVoiceRecording(connection_id));
@@ -408,28 +412,30 @@ namespace sound
     }
 
     /* 3D sound positioning */
-    std::error_code systemset_3d_listener_attributes(connection_id_t connection_id,
-                                                     const TS3_VECTOR &position,
-                                                     const TS3_VECTOR &forward,
-                                                     const TS3_VECTOR &up)
+    auto systemset_3d_listener_attributes(connection_id_t connection_id,
+                                          const TS3_VECTOR &position,
+                                          const TS3_VECTOR &forward,
+                                          const TS3_VECTOR &up) -> std::error_code
     {
         return to_ts_errc(ts_funcs.systemset3DListenerAttributes(connection_id, &position, &forward, &up));
     }
 
-    std::error_code
-    set_3d_wave_attributes(connection_id_t connection_id, uint64_t wave_handle, const TS3_VECTOR &position)
+    auto set_3d_wave_attributes(connection_id_t connection_id,
+                                uint64_t wave_handle,
+                                const TS3_VECTOR &position) -> std::error_code
     {
         return to_ts_errc(ts_funcs.set3DWaveAttributes(connection_id, wave_handle, &position));
     }
 
-    std::error_code
-    systemset_3d_settings(connection_id_t connection_id, float distance_factor, float rolloff_scale)
+    auto systemset_3d_settings(connection_id_t connection_id, float distance_factor, float rolloff_scale)
+    -> std::error_code
     {
         return to_ts_errc(ts_funcs.systemset3DSettings(connection_id, distance_factor, rolloff_scale));
     }
 
-    std::error_code
-    channelset_3d_attributes(connection_id_t connection_id, client_id_t client_id, const TS3_VECTOR &position)
+    auto channelset_3d_attributes(connection_id_t connection_id,
+                                  client_id_t client_id,
+                                  const TS3_VECTOR &position) -> std::error_code
     {
         return to_ts_errc(ts_funcs.channelset3DAttributes(connection_id, client_id, &position));
     }
@@ -437,14 +443,14 @@ namespace sound
 }  // namespace sound
 
 /* Interaction with the server */
-std::error_code start_connection(connection_id_t connection_id,
-                                 std::string_view identity,
-                                 std::string_view ip,
-                                 uint32_t port,
-                                 std::string_view nickname,
-                                 gsl::span<std::string> default_channel_array,
-                                 std::string_view default_channel_password,
-                                 std::string_view server_pw)
+auto start_connection(connection_id_t connection_id,
+                      std::string_view identity,
+                      std::string_view ip,
+                      uint32_t port,
+                      std::string_view nickname,
+                      gsl::span<std::string> default_channel_array,
+                      std::string_view default_channel_password,
+                      std::string_view server_pw) -> std::error_code
 {
     if (ip.empty())
         return ts_errc::parameter_invalid;
@@ -464,35 +470,35 @@ std::error_code start_connection(connection_id_t connection_id,
     default_channel_array_c.data(), default_channel_password.data(), server_pw.data()));
 }
 
-std::error_code stop_connection(connection_id_t connection_id, std::string_view message)
+auto stop_connection(connection_id_t connection_id, std::string_view message) -> std::error_code
 {
     return to_ts_errc(ts_funcs.stopConnection(connection_id, message.empty() ? nullptr : message.data()));
 }
 
-std::error_code request_client_move(connection_id_t connection_id,
-                                    client_id_t client_id,
-                                    channel_id_t new_channel_id,
-                                    std::string_view password /*= ""*/,
-                                    std::string_view return_code /*= ""*/)
+auto request_client_move(connection_id_t connection_id,
+                         client_id_t client_id,
+                         channel_id_t new_channel_id,
+                         std::string_view password /*= ""*/,
+                         std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestClientMove(connection_id, client_id, new_channel_id,
                                                  password.empty() ? nullptr : password.data(),
                                                  return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_client_properties(connection_id_t connection_id,
-                                          client_id_t client_id,
-                                          std::string_view return_code /*= ""*/)
+auto request_client_properties(connection_id_t connection_id,
+                               client_id_t client_id,
+                               std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestClientVariables(connection_id, client_id,
                                                       return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_client_kick(connection_id_t connection_id,
-                                    client_id_t client_id,
-                                    Kick_From kick_from,
-                                    std::string_view reason,
-                                    std::string_view return_code /*= ""*/)
+auto request_client_kick(connection_id_t connection_id,
+                         client_id_t client_id,
+                         Kick_From kick_from,
+                         std::string_view reason,
+                         std::string_view return_code /*= ""*/) -> std::error_code
 {
     if (Kick_From::Server == kick_from)
         return to_ts_errc(ts_funcs.requestClientKickFromServer(
@@ -504,65 +510,65 @@ std::error_code request_client_kick(connection_id_t connection_id,
     return ts_errc::parameter_invalid;
 }
 
-std::error_code request_channel_delete(connection_id_t connection_id,
-                                       channel_id_t channel_id,
-                                       bool force,
-                                       std::string_view return_code /*= ""*/)
+auto request_channel_delete(connection_id_t connection_id,
+                            channel_id_t channel_id,
+                            bool force,
+                            std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestChannelDelete(connection_id, channel_id, force ? 1 : 0,
                                                     return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_channel_move(connection_id_t connection_id,
-                                     channel_id_t channel_id,
-                                     channel_id_t new_channel_parent_id,
-                                     channel_id_t new_channel_order,
-                                     std::string_view return_code /*= ""*/)
+auto request_channel_move(connection_id_t connection_id,
+                          channel_id_t channel_id,
+                          channel_id_t new_channel_parent_id,
+                          channel_id_t new_channel_order,
+                          std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestChannelMove(connection_id, channel_id, new_channel_parent_id,
                                                   new_channel_order,
                                                   return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_send_text_msg_private(connection_id_t connection_id,
-                                              std::string_view message,
-                                              client_id_t target_client_id,
-                                              std::string_view return_code /*= ""*/)
+auto request_send_text_msg_private(connection_id_t connection_id,
+                                   std::string_view message,
+                                   client_id_t target_client_id,
+                                   std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestSendPrivateTextMsg(connection_id, message.data(), target_client_id,
                                                          return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_send_text_msg_channel(connection_id_t connection_id,
-                                              std::string_view message,
-                                              channel_id_t target_channel_id,
-                                              std::string_view return_code /*= ""*/)
+auto request_send_text_msg_channel(connection_id_t connection_id,
+                                   std::string_view message,
+                                   channel_id_t target_channel_id,
+                                   std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestSendChannelTextMsg(connection_id, message.data(), target_channel_id,
                                                          return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_send_text_msg_server(connection_id_t connection_id,
-                                             std::string_view message,
-                                             std::string_view return_code /*= ""*/)
+auto request_send_text_msg_server(connection_id_t connection_id,
+                                  std::string_view message,
+                                  std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestSendServerTextMsg(connection_id, message.data(),
                                                         return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_connection_info(connection_id_t connection_id,
-                                        client_id_t client_id,
-                                        std::string_view return_code /*= ""*/)
+auto request_connection_info(connection_id_t connection_id,
+                             client_id_t client_id,
+                             std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestConnectionInfo(connection_id, client_id,
                                                      return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_client_set_whisperlist(connection_id_t connection_id,
-                                               client_id_t client_id,
-                                               gsl::span<channel_id_t> target_channel_ids,
-                                               gsl::span<client_id_t> target_client_ids,
-                                               std::string_view return_code /*= ""*/)
+auto request_client_set_whisperlist(connection_id_t connection_id,
+                                    client_id_t client_id,
+                                    gsl::span<channel_id_t> target_channel_ids,
+                                    gsl::span<client_id_t> target_client_ids,
+                                    std::string_view return_code /*= ""*/) -> std::error_code
 {
     auto channel_ids = std::vector<channel_id_t>(target_channel_ids.begin(), target_channel_ids.end());
     if (!channel_ids.empty())
@@ -581,10 +587,10 @@ std::error_code request_client_set_whisperlist(connection_id_t connection_id,
                                          return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_channel_subscribe(connection_id_t connection_id,
-                                          bool onoff,
-                                          gsl::span<channel_id_t> channel_ids,
-                                          std::string_view return_code /*= ""*/)
+auto request_channel_subscribe(connection_id_t connection_id,
+                               bool onoff,
+                               gsl::span<channel_id_t> channel_ids,
+                               std::string_view return_code /*= ""*/) -> std::error_code
 {
     if (onoff)
         return to_ts_errc(ts_funcs.requestChannelSubscribe(
@@ -594,9 +600,9 @@ std::error_code request_channel_subscribe(connection_id_t connection_id,
                                                          return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_channel_subscribe_all(connection_id_t connection_id,
-                                              bool onoff,
-                                              std::string_view return_code /*= ""*/)
+auto request_channel_subscribe_all(connection_id_t connection_id,
+                                   bool onoff,
+                                   std::string_view return_code /*= ""*/) -> std::error_code
 {
     if (onoff)
         return to_ts_errc(ts_funcs.requestChannelSubscribeAll(
@@ -606,19 +612,19 @@ std::error_code request_channel_subscribe_all(connection_id_t connection_id,
     ts_funcs.requestChannelUnsubscribeAll(connection_id, return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_channel_description(connection_id_t connection_id,
-                                            channel_id_t channel_id,
-                                            std::string_view return_code /*= ""*/)
+auto request_channel_description(connection_id_t connection_id,
+                                 channel_id_t channel_id,
+                                 std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestChannelDescription(connection_id, channel_id,
                                                          return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_mute_clients(connection_id_t connection_id,
-                                     gsl::span<client_id_t> client_ids,
-                                     bool mute,
-                                     bool temporary,
-                                     std::string_view return_code /* = ""*/)
+auto request_mute_clients(connection_id_t connection_id,
+                          gsl::span<client_id_t> client_ids,
+                          bool mute,
+                          bool temporary,
+                          std::string_view return_code /* = ""*/) -> std::error_code
 {
     auto error = ts_errc::parameter_invalid;
     if (client_ids.empty())
@@ -648,35 +654,35 @@ std::error_code request_mute_clients(connection_id_t connection_id,
                                                     return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_client_poke(connection_id_t connection_id,
-                                    client_id_t client_id,
-                                    std::string_view message,
-                                    std::string_view return_code /*= ""*/)
+auto request_client_poke(connection_id_t connection_id,
+                         client_id_t client_id,
+                         std::string_view message,
+                         std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestClientPoke(connection_id, client_id, message.data(),
                                                  return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_client_ids(connection_id_t connection_id,
-                                   std::string_view client_uid,
-                                   std::string_view return_code /*= ""*/)
+auto request_client_ids(connection_id_t connection_id,
+                        std::string_view client_uid,
+                        std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestClientIDs(connection_id, client_uid.data(),
                                                 return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_client_chat_closed(connection_id_t connection_id,
-                                           std::string_view client_uid,
-                                           client_id_t client_id,
-                                           std::string_view return_code /*= ""*/)
+auto request_client_chat_closed(connection_id_t connection_id,
+                                std::string_view client_uid,
+                                client_id_t client_id,
+                                std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.clientChatClosed(connection_id, client_uid.data(), client_id,
                                                 return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_client_chat_composing(connection_id_t connection_id,
-                                              client_id_t client_id,
-                                              std::string_view return_code /*= ""*/)
+auto request_client_chat_composing(connection_id_t connection_id,
+                                   client_id_t client_id,
+                                   std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.clientChatComposing(connection_id, client_id,
                                                    return_code.empty() ? nullptr : return_code.data()));
@@ -684,27 +690,28 @@ std::error_code request_client_chat_composing(connection_id_t connection_id,
 
 namespace server_temporary_password
 {
-    std::error_code request_server_temporary_password_add(connection_id_t connection_id,
-                                                          std::string_view password,
-                                                          std::string_view description,
-                                                          uint64_t duration,
-                                                          channel_id_t target_channel_id,
-                                                          std::string_view target_channel_pw,
-                                                          std::string_view return_code /*= ""*/)
+    auto request_server_temporary_password_add(connection_id_t connection_id,
+                                               std::string_view password,
+                                               std::string_view description,
+                                               uint64_t duration,
+                                               channel_id_t target_channel_id,
+                                               std::string_view target_channel_pw,
+                                               std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestServerTemporaryPasswordAdd(
         connection_id, password.data(), description.data(), duration, target_channel_id,
         target_channel_pw.data(), return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code
-    request_del(connection_id_t connection_id, std::string_view pw, std::string_view return_code /*= ""*/)
+    auto request_del(connection_id_t connection_id,
+                     std::string_view pw,
+                     std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestServerTemporaryPasswordDel(
         connection_id, pw.data(), return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code request_list(connection_id_t connection_id, std::string_view return_code /*= ""*/)
+    auto request_list(connection_id_t connection_id, std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestServerTemporaryPasswordList(
         connection_id, return_code.empty() ? nullptr : return_code.data()));
@@ -715,7 +722,7 @@ namespace server_temporary_password
 /* Access clientlib information */
 
 /* Query own client ID */
-std::tuple<std::error_code, client_id_t> get_client_id(connection_id_t connection_id)
+auto get_client_id(connection_id_t connection_id) -> std::tuple<std::error_code, client_id_t>
 {
     client_id_t my_id = 0;
     const auto error = to_ts_errc(ts_funcs.getClientID(connection_id, &my_id));
@@ -724,16 +731,16 @@ std::tuple<std::error_code, client_id_t> get_client_id(connection_id_t connectio
 
 /* Client info */
 
-std::tuple<std::error_code, int32_t> get_client_self_property_as_int(connection_id_t connection_id,
-                                                                     size_t flag)
+auto get_client_self_property_as_int(connection_id_t connection_id, size_t flag)
+-> std::tuple<std::error_code, int32_t>
 {
-    int32_t value;
+    auto value = int32_t{0};
     const auto error = to_ts_errc(ts_funcs.getClientSelfVariableAsInt(connection_id, flag, &value));
     return {error, (error == ts_errc::ok) ? value : 0};
 }
 
-std::tuple<std::error_code, std::string> get_client_self_property_as_string(connection_id_t connection_id,
-                                                                            size_t flag)
+auto get_client_self_property_as_string(connection_id_t connection_id, size_t flag)
+-> std::tuple<std::error_code, std::string>
 {
     std::string result;
     char *result_c = nullptr;
@@ -746,41 +753,42 @@ std::tuple<std::error_code, std::string> get_client_self_property_as_string(conn
     return {error, result};
 }
 
-std::error_code set_client_self_property_as_int(connection_id_t connection_id, size_t flag, int32_t value)
+auto set_client_self_property_as_int(connection_id_t connection_id, size_t flag, int32_t value)
+-> std::error_code
 {
     return to_ts_errc(ts_funcs.setClientSelfVariableAsInt(connection_id, flag, value));
 }
 
-std::error_code
-set_client_self_property_as_string(connection_id_t connection_id, size_t flag, std::string_view value)
+auto set_client_self_property_as_string(connection_id_t connection_id, size_t flag, std::string_view value)
+-> std::error_code
 {
     return to_ts_errc(ts_funcs.setClientSelfVariableAsString(connection_id, flag, value.data()));
 }
 
-std::error_code flush_client_self_updates(connection_id_t connection_id, std::string_view return_code)
+auto flush_client_self_updates(connection_id_t connection_id, std::string_view return_code) -> std::error_code
 {
     return to_ts_errc(
     ts_funcs.flushClientSelfUpdates(connection_id, return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::tuple<std::error_code, int32_t>
-get_client_property_as_int(connection_id_t connection_id, client_id_t client_id, size_t flag)
+auto get_client_property_as_int(connection_id_t connection_id, client_id_t client_id, size_t flag)
+-> std::tuple<std::error_code, int32_t>
 {
-    int32_t value;
+    auto value = int32_t{0};
     const auto error = to_ts_errc(ts_funcs.getClientVariableAsInt(connection_id, client_id, flag, &value));
     return {error, (ts_errc::ok == error) ? value : 0};
 }
 
-std::tuple<std::error_code, uint64_t>
-get_client_property_as_uint64(connection_id_t connection_id, client_id_t client_id, size_t flag)
+auto get_client_property_as_uint64(connection_id_t connection_id, client_id_t client_id, size_t flag)
+-> std::tuple<std::error_code, uint64_t>
 {
-    uint64_t value;
+    auto value = uint64_t{0};
     const auto error = to_ts_errc(ts_funcs.getClientVariableAsUInt64(connection_id, client_id, flag, &value));
     return {error, (ts_errc::ok == error) ? value : 0};
 }
 
-std::tuple<std::error_code, std::string>
-get_client_property_as_string(connection_id_t connection_id, client_id_t client_id, size_t flag)
+auto get_client_property_as_string(connection_id_t connection_id, client_id_t client_id, size_t flag)
+-> std::tuple<std::error_code, std::string>
 {
     std::string result;
     char *result_c = nullptr;
@@ -794,8 +802,8 @@ get_client_property_as_string(connection_id_t connection_id, client_id_t client_
     return {error, result};
 }
 
-std::tuple<std::error_code, std::vector<com::teamspeak::client_id_t>>
-get_client_ids(connection_id_t connection_id)
+auto get_client_ids(connection_id_t connection_id)
+-> std::tuple<std::error_code, std::vector<com::teamspeak::client_id_t>>
 {
     std::vector<client_id_t> result;
     client_id_t *client_ids_c = nullptr;
@@ -810,8 +818,8 @@ get_client_ids(connection_id_t connection_id)
     return {error, result};
 }
 
-std::tuple<std::error_code, channel_id_t> get_channel_of_client(connection_id_t connection_id,
-                                                                client_id_t client_id)
+auto get_channel_of_client(connection_id_t connection_id, client_id_t client_id)
+-> std::tuple<std::error_code, channel_id_t>
 {
     uint64_t value = 0;
     const auto error = to_ts_errc(ts_funcs.getChannelOfClient(connection_id, client_id, &value));
@@ -820,16 +828,16 @@ std::tuple<std::error_code, channel_id_t> get_channel_of_client(connection_id_t 
 
 /* Channel info */
 
-std::tuple<std::error_code, int32_t>
-get_channel_property_as_int(connection_id_t connection_id, channel_id_t channel_id, size_t flag)
+auto get_channel_property_as_int(connection_id_t connection_id, channel_id_t channel_id, size_t flag)
+-> std::tuple<std::error_code, int32_t>
 {
     int32_t value = 0;
     const auto error = to_ts_errc(ts_funcs.getChannelVariableAsInt(connection_id, channel_id, flag, &value));
     return {error, value};
 }
 
-std::tuple<std::error_code, uint64_t>
-get_channel_property_as_uint64(connection_id_t connection_id, channel_id_t channel_id, size_t flag)
+auto get_channel_property_as_uint64(connection_id_t connection_id, channel_id_t channel_id, size_t flag)
+-> std::tuple<std::error_code, uint64_t>
 {
     uint64_t value = 0;
     const auto error =
@@ -837,8 +845,8 @@ get_channel_property_as_uint64(connection_id_t connection_id, channel_id_t chann
     return {error, value};
 }
 
-std::tuple<std::error_code, std::string>
-get_channel_property_as_string(connection_id_t connection_id, channel_id_t channel_id, size_t flag)
+auto get_channel_property_as_string(connection_id_t connection_id, channel_id_t channel_id, size_t flag)
+-> std::tuple<std::error_code, std::string>
 {
     std::string result;
     char *result_c = nullptr;
@@ -852,8 +860,8 @@ get_channel_property_as_string(connection_id_t connection_id, channel_id_t chann
     return {error, result};
 }
 
-std::tuple<std::error_code, channel_id_t>
-get_channel_id_from_channel_names(connection_id_t connection_id, gsl::span<std::string> channel_names)
+auto get_channel_id_from_channel_names(connection_id_t connection_id, gsl::span<std::string> channel_names)
+-> std::tuple<std::error_code, channel_id_t>
 {
     channel_id_t result = 0;
     std::vector<char *> channel_names_c;
@@ -875,47 +883,47 @@ get_channel_id_from_channel_names(connection_id_t connection_id, gsl::span<std::
     return {error, result};
 }
 
-std::error_code set_channel_variable_as_int(connection_id_t connection_id,
-                                            channel_id_t channel_id,
-                                            size_t flag,
-                                            int32_t value)
+auto set_channel_variable_as_int(connection_id_t connection_id,
+                                 channel_id_t channel_id,
+                                 size_t flag,
+                                 int32_t value) -> std::error_code
 {
     return to_ts_errc(ts_funcs.setChannelVariableAsInt(connection_id, channel_id, flag, value));
 }
 
-std::error_code set_channel_variable_as_uint64(connection_id_t connection_id,
-                                               channel_id_t channel_id,
-                                               size_t flag,
-                                               uint64_t value)
+auto set_channel_variable_as_uint64(connection_id_t connection_id,
+                                    channel_id_t channel_id,
+                                    size_t flag,
+                                    uint64_t value) -> std::error_code
 {
     return to_ts_errc(ts_funcs.setChannelVariableAsUInt64(connection_id, channel_id, flag, value));
 }
 
-std::error_code set_channel_variable_as_string(connection_id_t connection_id,
-                                               channel_id_t channel_id,
-                                               size_t flag,
-                                               std::string_view value)
+auto set_channel_variable_as_string(connection_id_t connection_id,
+                                    channel_id_t channel_id,
+                                    size_t flag,
+                                    std::string_view value) -> std::error_code
 {
     return to_ts_errc(ts_funcs.setChannelVariableAsString(connection_id, channel_id, flag, value.data()));
 }
 
-std::error_code flush_channel_updates(connection_id_t connection_id,
-                                      channel_id_t channel_id,
-                                      std::string_view return_code /*= ""*/)
+auto flush_channel_updates(connection_id_t connection_id,
+                           channel_id_t channel_id,
+                           std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.flushChannelUpdates(connection_id, channel_id,
                                                    return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code flush_channel_creation(connection_id_t connection_id,
-                                       channel_id_t channel_parent_id,
-                                       std::string_view return_code /*= ""*/)
+auto flush_channel_creation(connection_id_t connection_id,
+                            channel_id_t channel_parent_id,
+                            std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.flushChannelCreation(connection_id, channel_parent_id,
                                                     return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::tuple<std::error_code, std::vector<channel_id_t>> get_channel_ids(connection_id_t connection_id)
+auto get_channel_ids(connection_id_t connection_id) -> std::tuple<std::error_code, std::vector<channel_id_t>>
 {
     std::vector<channel_id_t> result;
     channel_id_t *channel_ids_c = nullptr;
@@ -930,7 +938,7 @@ std::tuple<std::error_code, std::vector<channel_id_t>> get_channel_ids(connectio
     return {error, result};
 }
 
-std::tuple<std::error_code, channel_id_t> get_channel_id(connection_id_t connection_id)
+auto get_channel_id(connection_id_t connection_id) -> std::tuple<std::error_code, channel_id_t>
 {
     const auto [error_client_id, client_id] = get_client_id(connection_id);
     if (ts_errc::ok != error_client_id)
@@ -940,8 +948,8 @@ std::tuple<std::error_code, channel_id_t> get_channel_id(connection_id_t connect
     return {error_channel_id, channel_id};
 }
 
-std::tuple<std::error_code, std::vector<client_id_t>> get_channel_client_ids(connection_id_t connection_id,
-                                                                             channel_id_t channel_id)
+auto get_channel_client_ids(connection_id_t connection_id, channel_id_t channel_id)
+-> std::tuple<std::error_code, std::vector<client_id_t>>
 {
     std::vector<client_id_t> result;
     client_id_t *client_ids_c = nullptr;
@@ -956,8 +964,8 @@ std::tuple<std::error_code, std::vector<client_id_t>> get_channel_client_ids(con
     return {error, result};
 }
 
-std::tuple<std::error_code, channel_id_t> get_parent_channel_of_channel(connection_id_t connection_id,
-                                                                        channel_id_t channelID)
+auto get_parent_channel_of_channel(connection_id_t connection_id, channel_id_t channelID)
+-> std::tuple<std::error_code, channel_id_t>
 {
     channel_id_t result = 0;
     const auto error = to_ts_errc(ts_funcs.getParentChannelOfChannel(connection_id, channelID, &result));
@@ -966,7 +974,7 @@ std::tuple<std::error_code, channel_id_t> get_parent_channel_of_channel(connecti
 
 /* Server info */
 
-std::tuple<std::error_code, std::vector<connection_id_t>> get_server_connection_handler_ids()
+auto get_server_connection_handler_ids() -> std::tuple<std::error_code, std::vector<connection_id_t>>
 {
     std::vector<connection_id_t> result;
     connection_id_t *connection_ids_c = nullptr;
@@ -981,23 +989,24 @@ std::tuple<std::error_code, std::vector<connection_id_t>> get_server_connection_
     return {error, result};
 }
 
-std::tuple<std::error_code, int32_t> get_server_property_as_int(connection_id_t connection_id, size_t flag)
+auto get_server_property_as_int(connection_id_t connection_id, size_t flag)
+-> std::tuple<std::error_code, int32_t>
 {
     int32_t result = 0;
     const auto error = to_ts_errc(ts_funcs.getServerVariableAsInt(connection_id, flag, &result));
     return {error, result};
 }
 
-std::tuple<std::error_code, uint64_t> get_server_property_as_uint64(connection_id_t connection_id,
-                                                                    size_t flag)
+auto get_server_property_as_uint64(connection_id_t connection_id, size_t flag)
+-> std::tuple<std::error_code, uint64_t>
 {
     uint64_t result = 0;
     const auto error = to_ts_errc(ts_funcs.getServerVariableAsUInt64(connection_id, flag, &result));
     return {error, result};
 }
 
-std::tuple<std::error_code, std::string> get_server_property_as_string(connection_id_t connection_id,
-                                                                       size_t flag)
+auto get_server_property_as_string(connection_id_t connection_id, size_t flag)
+-> std::tuple<std::error_code, std::string>
 {
     std::string result;
     char *result_c = nullptr;
@@ -1010,21 +1019,21 @@ std::tuple<std::error_code, std::string> get_server_property_as_string(connectio
     return {error, result};
 }
 
-std::error_code request_server_properties(connection_id_t connection_id)
+auto request_server_properties(connection_id_t connection_id) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestServerVariables(connection_id));
 }
 
 /* Connection info */
-std::tuple<std::error_code, int> get_connection_status(connection_id_t connection_id)
+auto get_connection_status(connection_id_t connection_id) -> std::tuple<std::error_code, int>
 {
     int result = 0;
     const auto error = to_ts_errc(ts_funcs.getConnectionStatus(connection_id, &result));
     return {error, result};
 }
 
-std::tuple<std::error_code, uint64_t>
-get_connection_property_as_uint64(connection_id_t connection_id, client_id_t client_id, size_t flag)
+auto get_connection_property_as_uint64(connection_id_t connection_id, client_id_t client_id, size_t flag)
+-> std::tuple<std::error_code, uint64_t>
 {
     uint64_t result = 0;
     const auto error =
@@ -1032,8 +1041,8 @@ get_connection_property_as_uint64(connection_id_t connection_id, client_id_t cli
     return {error, result};
 }
 
-std::tuple<std::error_code, double>
-get_connection_property_as_double(connection_id_t connection_id, client_id_t client_id, size_t flag)
+auto get_connection_property_as_double(connection_id_t connection_id, client_id_t client_id, size_t flag)
+-> std::tuple<std::error_code, double>
 {
     double result = 0;
     const auto error =
@@ -1041,8 +1050,8 @@ get_connection_property_as_double(connection_id_t connection_id, client_id_t cli
     return {error, result};
 }
 
-std::tuple<std::error_code, std::string>
-get_connection_property_as_string(connection_id_t connection_id, client_id_t client_id, size_t flag)
+auto get_connection_property_as_string(connection_id_t connection_id, client_id_t client_id, size_t flag)
+-> std::tuple<std::error_code, std::string>
 {
     char *result_c = nullptr;
     const auto error =
@@ -1054,67 +1063,67 @@ get_connection_property_as_string(connection_id_t connection_id, client_id_t cli
     return {error, result};
 }
 
-std::error_code clean_up_connection_info(connection_id_t connection_id, client_id_t client_id)
+auto clean_up_connection_info(connection_id_t connection_id, client_id_t client_id) -> std::error_code
 {
     return to_ts_errc(ts_funcs.cleanUpConnectionInfo(connection_id, client_id));
 }
 
 /* Client related */
-std::error_code request_client_db_id_from_uid(connection_id_t connection_id,
-                                              std::string_view client_uid,
-                                              std::string_view return_code /*= ""*/)
+auto request_client_db_id_from_uid(connection_id_t connection_id,
+                                   std::string_view client_uid,
+                                   std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestClientDBIDfromUID(connection_id, client_uid.data(),
                                                         return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_client_name_from_uid(connection_id_t connection_id,
-                                             std::string_view client_uid,
-                                             std::string_view return_code /*= ""*/)
+auto request_client_name_from_uid(connection_id_t connection_id,
+                                  std::string_view client_uid,
+                                  std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestClientNamefromUID(connection_id, client_uid.data(),
                                                         return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_client_name_from_dbid(connection_id_t connection_id,
-                                              client_db_id_t client_db_id,
-                                              std::string_view return_code /*= ""*/)
+auto request_client_name_from_dbid(connection_id_t connection_id,
+                                   client_db_id_t client_db_id,
+                                   std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestClientNamefromDBID(connection_id, client_db_id,
                                                          return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_client_edit_description(connection_id_t connection_id,
-                                                client_id_t client_id,
-                                                std::string_view client_description,
-                                                std::string_view return_code /*= ""*/)
+auto request_client_edit_description(connection_id_t connection_id,
+                                     client_id_t client_id,
+                                     std::string_view client_description,
+                                     std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestClientEditDescription(
     connection_id, client_id, client_description.data(), return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_client_set_is_talker(connection_id_t connection_id,
-                                             client_id_t client_id,
-                                             bool is_talker,
-                                             std::string_view return_code /*= ""*/)
+auto request_client_set_is_talker(connection_id_t connection_id,
+                                  client_id_t client_id,
+                                  bool is_talker,
+                                  std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestClientSetIsTalker(connection_id, client_id, is_talker ? 1 : 0,
                                                         return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_is_talker(connection_id_t connection_id,
-                                  bool is_talker_request,
-                                  std::string_view message,
-                                  std::string_view return_code /*= ""*/)
+auto request_is_talker(connection_id_t connection_id,
+                       bool is_talker_request,
+                       std::string_view message,
+                       std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestIsTalker(connection_id, is_talker_request ? 1 : 0, message.data(),
                                                return_code.empty() ? nullptr : return_code.data()));
 }
 
 /* Plugin related */
-std::error_code request_send_client_query_command(connection_id_t connection_id,
-                                                  std::string_view command,
-                                                  std::string_view return_code /*= ""*/)
+auto request_send_client_query_command(connection_id_t connection_id,
+                                       std::string_view command,
+                                       std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.requestSendClientQueryCommand(
     connection_id, command.data(), return_code.empty() ? nullptr : return_code.data()));
@@ -1124,7 +1133,7 @@ std::error_code request_send_client_query_command(connection_id_t connection_id,
 namespace file_transfer
 {
 
-    std::tuple<std::error_code, std::string> get_transfer_file_name(transfer_id_t transfer_id)
+    auto get_transfer_file_name(transfer_id_t transfer_id) -> std::tuple<std::error_code, std::string>
     {
         char *result_c = nullptr;
         const auto error = to_ts_errc(ts_funcs.getTransferFileName(transfer_id, &result_c));
@@ -1135,7 +1144,7 @@ namespace file_transfer
         return {error, result};
     }
 
-    std::tuple<std::error_code, std::string> get_transfer_file_path(transfer_id_t transfer_id)
+    auto get_transfer_file_path(transfer_id_t transfer_id) -> std::tuple<std::error_code, std::string>
     {
         char *result_c = nullptr;
         const auto error = to_ts_errc(ts_funcs.getTransferFilePath(transfer_id, &result_c));
@@ -1146,63 +1155,63 @@ namespace file_transfer
         return {error, result};
     }
 
-    std::tuple<std::error_code, uint64_t> get_transfer_file_size(transfer_id_t transfer_id)
+    auto get_transfer_file_size(transfer_id_t transfer_id) -> std::tuple<std::error_code, uint64_t>
     {
         auto result = uint64_t{0};
         const auto error = to_ts_errc(ts_funcs.getTransferFileSize(transfer_id, &result));
         return {error, result};
     }
 
-    std::tuple<std::error_code, uint64_t> get_transfer_file_size_done(transfer_id_t transfer_id)
+    auto get_transfer_file_size_done(transfer_id_t transfer_id) -> std::tuple<std::error_code, uint64_t>
     {
         auto result = uint64_t{0};
         const auto error = to_ts_errc(ts_funcs.getTransferFileSizeDone(transfer_id, &result));
         return {error, result};
     }
 
-    std::tuple<std::error_code, bool> is_transfer_sender(transfer_id_t transfer_id)
+    auto is_transfer_sender(transfer_id_t transfer_id) -> std::tuple<std::error_code, bool>
     {
         auto result = int32_t{0};
         const auto error = to_ts_errc(ts_funcs.isTransferSender(transfer_id, &result));
         return {error, !!result};
     }
 
-    std::tuple<std::error_code, int32_t> get_transfer_status(transfer_id_t transfer_id)
+    auto get_transfer_status(transfer_id_t transfer_id) -> std::tuple<std::error_code, int32_t>
     {
         auto result = int32_t{0};
         const auto error = to_ts_errc(ts_funcs.getTransferStatus(transfer_id, &result));
         return {error, result};
     }
 
-    std::tuple<std::error_code, float> get_transfer_speed_current(transfer_id_t transfer_id)
+    auto get_transfer_speed_current(transfer_id_t transfer_id) -> std::tuple<std::error_code, float>
     {
         auto result = float{0.F};
         const auto error = to_ts_errc(ts_funcs.getCurrentTransferSpeed(transfer_id, &result));
         return {error, result};
     }
 
-    std::tuple<std::error_code, float> get_transfer_speed_average(transfer_id_t transfer_id)
+    auto get_transfer_speed_average(transfer_id_t transfer_id) -> std::tuple<std::error_code, float>
     {
         auto result = float{0.F};
         const auto error = to_ts_errc(ts_funcs.getAverageTransferSpeed(transfer_id, &result));
         return {error, result};
     }
 
-    std::tuple<std::error_code, uint64_t> get_transfer_run_time(transfer_id_t transfer_id)
+    auto get_transfer_run_time(transfer_id_t transfer_id) -> std::tuple<std::error_code, uint64_t>
     {
         auto result = uint64_t{0};
         const auto error = to_ts_errc(ts_funcs.getTransferRunTime(transfer_id, &result));
         return {error, result};
     }
 
-    std::tuple<std::error_code, transfer_id_t> send_file(connection_id_t connection_id,
-                                                         channel_id_t channel_id,
-                                                         std::string_view channel_pw,
-                                                         std::string_view file,
-                                                         bool overwrite,
-                                                         bool resume,
-                                                         std::string_view source_directory,
-                                                         std::string_view return_code /*= ""*/)
+    auto send_file(connection_id_t connection_id,
+                   channel_id_t channel_id,
+                   std::string_view channel_pw,
+                   std::string_view file,
+                   bool overwrite,
+                   bool resume,
+                   std::string_view source_directory,
+                   std::string_view return_code /*= ""*/) -> std::tuple<std::error_code, transfer_id_t>
     {
         auto result = transfer_id_t{0};
         const auto error = to_ts_errc(ts_funcs.sendFile(
@@ -1211,14 +1220,14 @@ namespace file_transfer
         return {error, result};
     }
 
-    std::tuple<std::error_code, transfer_id_t> request_file(connection_id_t connection_id,
-                                                            channel_id_t channel_id,
-                                                            std::string_view channel_pw,
-                                                            std::string_view file,
-                                                            bool overwrite,
-                                                            bool resume,
-                                                            std::string_view destination_directory,
-                                                            std::string_view return_code /*= ""*/)
+    auto request_file(connection_id_t connection_id,
+                      channel_id_t channel_id,
+                      std::string_view channel_pw,
+                      std::string_view file,
+                      bool overwrite,
+                      bool resume,
+                      std::string_view destination_directory,
+                      std::string_view return_code /*= ""*/) -> std::tuple<std::error_code, transfer_id_t>
     {
         auto result = transfer_id_t{0};
         const auto error = to_ts_errc(ts_funcs.requestFile(
@@ -1227,40 +1236,40 @@ namespace file_transfer
         return {error, result};
     }
 
-    std::error_code halt_Transfer(connection_id_t connection_id,
-                                  transfer_id_t transfer_id,
-                                  bool delete_unfinished_file,
-                                  std::string_view return_code /*= ""*/)
+    auto halt_Transfer(connection_id_t connection_id,
+                       transfer_id_t transfer_id,
+                       bool delete_unfinished_file,
+                       std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.haltTransfer(connection_id, transfer_id, delete_unfinished_file ? 1 : 0,
                                                 return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code request_file_list(connection_id_t connection_id,
-                                      channel_id_t channel_id,
-                                      std::string_view channel_pw,
-                                      std::string_view path,
-                                      std::string_view return_code /*= ""*/)
+    auto request_file_list(connection_id_t connection_id,
+                           channel_id_t channel_id,
+                           std::string_view channel_pw,
+                           std::string_view path,
+                           std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestFileList(connection_id, channel_id, channel_pw.data(), path.data(),
                                                    return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code request_file_info(connection_id_t connection_id,
-                                      channel_id_t channel_id,
-                                      std::string_view channel_pw,
-                                      std::string_view file,
-                                      std::string_view return_code /*= ""*/)
+    auto request_file_info(connection_id_t connection_id,
+                           channel_id_t channel_id,
+                           std::string_view channel_pw,
+                           std::string_view file,
+                           std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestFileInfo(connection_id, channel_id, channel_pw.data(), file.data(),
                                                    return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code request_delete_files(connection_id_t connection_id,
-                                         channel_id_t channel_id,
-                                         std::string_view channel_pw,
-                                         gsl::span<std::string> full_file_paths,
-                                         std::string_view return_code /*= ""*/)
+    auto request_delete_files(connection_id_t connection_id,
+                              channel_id_t channel_id,
+                              std::string_view channel_pw,
+                              gsl::span<std::string> full_file_paths,
+                              std::string_view return_code /*= ""*/) -> std::error_code
     {
         if (full_file_paths.empty())
             return ts_errc::parameter_invalid;
@@ -1278,25 +1287,25 @@ namespace file_transfer
         return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code request_create_directory(connection_id_t connection_id,
-                                             channel_id_t channel_id,
-                                             std::string_view channel_pw,
-                                             std::string_view directory_path,
-                                             std::string_view return_code /*= ""*/)
+    auto request_create_directory(connection_id_t connection_id,
+                                  channel_id_t channel_id,
+                                  std::string_view channel_pw,
+                                  std::string_view directory_path,
+                                  std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(
         ts_funcs.requestCreateDirectory(connection_id, channel_id, channel_pw.data(), directory_path.data(),
                                         return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code request_rename_file(connection_id_t connection_id,
-                                        channel_id_t from_channel_id,
-                                        std::string_view channel_pw,
-                                        channel_id_t to_channel_id,
-                                        std::string_view to_channel_pw,
-                                        std::string_view old_file,
-                                        std::string_view new_file,
-                                        std::string_view return_code /*= ""*/)
+    auto request_rename_file(connection_id_t connection_id,
+                             channel_id_t from_channel_id,
+                             std::string_view channel_pw,
+                             channel_id_t to_channel_id,
+                             std::string_view to_channel_pw,
+                             std::string_view old_file,
+                             std::string_view new_file,
+                             std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestRenameFile(
         connection_id, from_channel_id, channel_pw.data(), to_channel_id, to_channel_pw.data(),
@@ -1310,41 +1319,43 @@ namespace offline_messages
 {
 
 
-    std::error_code request_add(connection_id_t connection_id,
-                                std::string_view to_client_uid,
-                                std::string_view subject,
-                                std::string_view message,
-                                std::string_view return_code /*= ""*/)
+    auto request_add(connection_id_t connection_id,
+                     std::string_view to_client_uid,
+                     std::string_view subject,
+                     std::string_view message,
+                     std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestMessageAdd(connection_id, to_client_uid.data(), subject.data(),
                                                      message.data(),
                                                      return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code
-    request_del(connection_id_t connection_id, uint64_t message_id, std::string_view return_code /*= ""*/)
+    auto request_del(connection_id_t connection_id,
+                     uint64_t message_id,
+                     std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestMessageDel(connection_id, message_id,
                                                      return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code
-    request_get(connection_id_t connection_id, uint64_t message_id, std::string_view return_code /*= ""*/)
+    auto request_get(connection_id_t connection_id,
+                     uint64_t message_id,
+                     std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestMessageGet(connection_id, message_id,
                                                      return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code request_list(connection_id_t connection_id, std::string_view return_code /*= ""*/)
+    auto request_list(connection_id_t connection_id, std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(
         ts_funcs.requestMessageList(connection_id, return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code request_update_flag(connection_id_t connection_id,
-                                        uint64_t message_id,
-                                        int32_t flag,
-                                        std::string_view return_code /*= ""*/)
+    auto request_update_flag(connection_id_t connection_id,
+                             uint64_t message_id,
+                             int32_t flag,
+                             std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestMessageUpdateFlag(
         connection_id, message_id, flag, return_code.empty() ? nullptr : return_code.data()));
@@ -1354,18 +1365,18 @@ namespace offline_messages
 
 /* Interacting with the server - confirming passwords */
 
-std::error_code verify_password_server(connection_id_t connection_id,
-                                       std::string_view server_pw,
-                                       std::string_view return_code /*= ""*/)
+auto verify_password_server(connection_id_t connection_id,
+                            std::string_view server_pw,
+                            std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.verifyServerPassword(connection_id, server_pw.data(),
                                                     return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code verify_password_channel(connection_id_t connection_id,
-                                        channel_id_t channel_id,
-                                        std::string_view channel_pw,
-                                        std::string_view return_code /*= ""*/)
+auto verify_password_channel(connection_id_t connection_id,
+                             channel_id_t channel_id,
+                             std::string_view channel_pw,
+                             std::string_view return_code /*= ""*/) -> std::error_code
 {
     return to_ts_errc(ts_funcs.verifyChannelPassword(connection_id, channel_id, channel_pw.data(),
                                                      return_code.empty() ? nullptr : return_code.data()));
@@ -1375,24 +1386,24 @@ std::error_code verify_password_channel(connection_id_t connection_id,
 namespace ban
 {
 
-    std::error_code ban_client(connection_id_t connection_id,
-                               client_id_t client_id,
-                               uint64_t time_in_seconds,
-                               std::string_view reason,
-                               std::string_view return_code /*= ""*/)
+    auto ban_client(connection_id_t connection_id,
+                    client_id_t client_id,
+                    uint64_t time_in_seconds,
+                    std::string_view reason,
+                    std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.banclient(connection_id, client_id, time_in_seconds, reason.data(),
                                              return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code ban_add(connection_id_t connection_id,
-                            std::string_view ip_regexp,
-                            std::string_view name_regexp,
-                            std::string_view target_client_uid,
-                            std::string_view target_client_mytsid,
-                            uint64_t time_in_seconds,
-                            std::string_view reason,
-                            std::string_view return_code /*= ""*/)
+    auto ban_add(connection_id_t connection_id,
+                 std::string_view ip_regexp,
+                 std::string_view name_regexp,
+                 std::string_view target_client_uid,
+                 std::string_view target_client_mytsid,
+                 uint64_t time_in_seconds,
+                 std::string_view reason,
+                 std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.banadd(connection_id, ip_regexp.data(), name_regexp.data(),
                                           target_client_uid.data(), target_client_mytsid.data(),
@@ -1400,33 +1411,33 @@ namespace ban
                                           return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code ban_client_db_id(connection_id_t connection_id,
-                                     client_db_id_t client_db_id,
-                                     uint64_t time_in_seconds,
-                                     std::string_view reason,
-                                     std::string_view return_code /*= ""*/)
+    auto ban_client_db_id(connection_id_t connection_id,
+                          client_db_id_t client_db_id,
+                          uint64_t time_in_seconds,
+                          std::string_view reason,
+                          std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.banclientdbid(connection_id, client_db_id, time_in_seconds, reason.data(),
                                                  return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code
-    ban_del(connection_id_t connection_id, uint64_t ban_id, std::string_view return_code /*= ""*/)
+    auto ban_del(connection_id_t connection_id, uint64_t ban_id, std::string_view return_code /*= ""*/)
+    -> std::error_code
     {
         return to_ts_errc(
         ts_funcs.bandel(connection_id, ban_id, return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code ban_del_all(connection_id_t connection_id, std::string_view return_code /*= ""*/)
+    auto ban_del_all(connection_id_t connection_id, std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(
         ts_funcs.bandelall(connection_id, return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code request_list(connection_id_t connection_id,
-                                 uint64_t start,
-                                 uint32_t duration,
-                                 std::string_view return_code /*= ""*/)
+    auto request_list(connection_id_t connection_id,
+                      uint64_t start,
+                      uint32_t duration,
+                      std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestBanList(connection_id, start, duration,
                                                   return_code.empty() ? nullptr : return_code.data()));
@@ -1437,36 +1448,36 @@ namespace ban
 /* Interacting with the server - complain */
 namespace complain
 {
-    std::error_code request_add(connection_id_t connection_id,
-                                client_db_id_t targetClientDatabaseID,
-                                std::string_view reason,
-                                std::string_view return_code /*= ""*/)
+    auto request_add(connection_id_t connection_id,
+                     client_db_id_t targetClientDatabaseID,
+                     std::string_view reason,
+                     std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestComplainAdd(connection_id, targetClientDatabaseID, reason.data(),
                                                       return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code request_del(connection_id_t connection_id,
-                                client_db_id_t targetClientDatabaseID,
-                                client_db_id_t fromClientDatabaseID,
-                                std::string_view return_code /*= ""*/)
+    auto request_del(connection_id_t connection_id,
+                     client_db_id_t targetClientDatabaseID,
+                     client_db_id_t fromClientDatabaseID,
+                     std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestComplainDel(connection_id, targetClientDatabaseID,
                                                       fromClientDatabaseID,
                                                       return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code request_del_all(connection_id_t connection_id,
-                                    client_db_id_t targetClientDatabaseID,
-                                    std::string_view return_code /*= ""*/)
+    auto request_del_all(connection_id_t connection_id,
+                         client_db_id_t targetClientDatabaseID,
+                         std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestComplainDelAll(connection_id, targetClientDatabaseID,
                                                          return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code request_list(connection_id_t connection_id,
-                                 client_db_id_t targetClientDatabaseID,
-                                 std::string_view return_code /*= ""*/)
+    auto request_list(connection_id_t connection_id,
+                      client_db_id_t targetClientDatabaseID,
+                      std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestComplainList(connection_id, targetClientDatabaseID,
                                                        return_code.empty() ? nullptr : return_code.data()));
@@ -1479,8 +1490,8 @@ namespace complain
 namespace permissions
 {
 
-    std::tuple<std::error_code, std::string> get_permission_name(connection_id_t connection_id,
-                                                                 permission_id_t permission_id)
+    auto get_permission_name(connection_id_t connection_id, permission_id_t permission_id)
+    -> std::tuple<std::error_code, std::string>
     {
         std::string result;
         auto result_c = std::array<char, kPermBufferSize>{};
@@ -1492,9 +1503,9 @@ namespace permissions
         return {error, result};
     }
 
-    std::error_code request_group_list(connection_id_t connection_id,
-                                       Group_List_Type group_list_type,
-                                       std::string_view return_code)
+    auto request_group_list(connection_id_t connection_id,
+                            Group_List_Type group_list_type,
+                            std::string_view return_code) -> std::error_code
     {
         switch (group_list_type)
         {
@@ -1510,11 +1521,11 @@ namespace permissions
         return ts_errc::parameter_invalid;
     }
 
-    std::error_code request_group_add(connection_id_t connection_id,
-                                      Group_List_Type group_list_type,
-                                      std::string_view group_name,
-                                      int32_t group_type,
-                                      std::string_view return_code)
+    auto request_group_add(connection_id_t connection_id,
+                           Group_List_Type group_list_type,
+                           std::string_view group_name,
+                           int32_t group_type,
+                           std::string_view return_code) -> std::error_code
     {
         switch (group_list_type)
         {
@@ -1532,11 +1543,11 @@ namespace permissions
         return ts_errc::parameter_invalid;
     }
 
-    std::error_code request_group_del(connection_id_t connection_id,
-                                      Group_List_Type group_list_type,
-                                      uint64_t group_id,
-                                      bool force,
-                                      std::string_view return_code)
+    auto request_group_del(connection_id_t connection_id,
+                           Group_List_Type group_list_type,
+                           uint64_t group_id,
+                           bool force,
+                           std::string_view return_code) -> std::error_code
     {
         switch (group_list_type)
         {
@@ -1555,11 +1566,11 @@ namespace permissions
     namespace server_group
     {
 
-        std::error_code request_change_client(connection_id_t connection_id,
-                                              bool add_remove,
-                                              uint64_t group_id,
-                                              client_db_id_t client_db_id,
-                                              std::string_view return_code /*= ""*/)
+        auto request_change_client(connection_id_t connection_id,
+                                   bool add_remove,
+                                   uint64_t group_id,
+                                   client_db_id_t client_db_id,
+                                   std::string_view return_code /*= ""*/) -> std::error_code
         {
             if (add_remove)
             {
@@ -1570,19 +1581,19 @@ namespace permissions
             connection_id, group_id, client_db_id, return_code.empty() ? nullptr : return_code.data()));
         }
 
-        std::error_code request_groups_by_client_id(connection_id_t connection_id,
-                                                    client_db_id_t clientDBID,
-                                                    std::string_view return_code /*= ""*/)
+        auto request_groups_by_client_id(connection_id_t connection_id,
+                                         client_db_id_t clientDBID,
+                                         std::string_view return_code /*= ""*/) -> std::error_code
         {
             return to_ts_errc(ts_funcs.requestServerGroupsByClientID(
             connection_id, clientDBID, return_code.empty() ? nullptr : return_code.data()));
         }
 
-        std::error_code request_add_perm(connection_id_t connection_id,
-                                         permission_group_id_t server_group_id,
-                                         bool continue_on_error,
-                                         gsl::span<Permission_Entry> entries,
-                                         std::string_view return_code /*= ""*/)
+        auto request_add_perm(connection_id_t connection_id,
+                              permission_group_id_t server_group_id,
+                              bool continue_on_error,
+                              gsl::span<Permission_Entry> entries,
+                              std::string_view return_code /*= ""*/) -> std::error_code
         {
             if (entries.empty())
                 return ts_errc::parameter_invalid;
@@ -1606,11 +1617,11 @@ namespace permissions
             return_code.empty() ? nullptr : return_code.data()));
         }
 
-        std::error_code request_del_perm(connection_id_t connection_id,
-                                         permission_group_id_t server_group_id,
-                                         bool continue_on_error,
-                                         gsl::span<permission_id_t> ids,
-                                         std::string_view return_code /*= ""*/)
+        auto request_del_perm(connection_id_t connection_id,
+                              permission_group_id_t server_group_id,
+                              bool continue_on_error,
+                              gsl::span<permission_id_t> ids,
+                              std::string_view return_code /*= ""*/) -> std::error_code
         {
             if (ids.empty())
                 return ts_errc::parameter_invalid;
@@ -1620,18 +1631,18 @@ namespace permissions
             return_code.empty() ? nullptr : return_code.data()));
         }
 
-        std::error_code request_list(connection_id_t connection_id,
-                                     permission_group_id_t server_group_id,
-                                     std::string_view return_code /*= ""*/)
+        auto request_list(connection_id_t connection_id,
+                          permission_group_id_t server_group_id,
+                          std::string_view return_code /*= ""*/) -> std::error_code
         {
             return to_ts_errc(ts_funcs.requestServerGroupPermList(
             connection_id, server_group_id, return_code.empty() ? nullptr : return_code.data()));
         }
 
-        std::error_code request_client_list(connection_id_t connection_id,
-                                            permission_group_id_t group_id,
-                                            bool with_names,
-                                            std::string_view return_code)
+        auto request_client_list(connection_id_t connection_id,
+                                 permission_group_id_t group_id,
+                                 bool with_names,
+                                 std::string_view return_code) -> std::error_code
         {
             return to_ts_errc(ts_funcs.requestServerGroupClientList(
             connection_id, group_id, with_names ? 1 : 0, return_code.empty() ? nullptr : return_code.data()));
@@ -1640,11 +1651,11 @@ namespace permissions
 
     namespace channel_group
     {
-        std::error_code request_add_perm(connection_id_t connection_id,
-                                         permission_group_id_t group_id,
-                                         bool continue_on_error,
-                                         gsl::span<Permission_Entry> entries,
-                                         std::string_view return_code /*= ""*/)
+        auto request_add_perm(connection_id_t connection_id,
+                              permission_group_id_t group_id,
+                              bool continue_on_error,
+                              gsl::span<Permission_Entry> entries,
+                              std::string_view return_code /*= ""*/) -> std::error_code
         {
             if (entries.empty())
                 return ts_errc::parameter_invalid;
@@ -1663,11 +1674,11 @@ namespace permissions
             permission_ids.size(), return_code.empty() ? nullptr : return_code.data()));
         }
 
-        std::error_code request_del_perm(connection_id_t connection_id,
-                                         permission_group_id_t group_id,
-                                         bool continue_on_error,
-                                         gsl::span<permission_id_t> ids,
-                                         std::string_view return_code /*= ""*/)
+        auto request_del_perm(connection_id_t connection_id,
+                              permission_group_id_t group_id,
+                              bool continue_on_error,
+                              gsl::span<permission_id_t> ids,
+                              std::string_view return_code /*= ""*/) -> std::error_code
         {
             if (ids.empty())
                 return ts_errc::parameter_invalid;
@@ -1677,17 +1688,17 @@ namespace permissions
             return_code.empty() ? nullptr : return_code.data()));
         }
 
-        std::error_code request_list(connection_id_t connection_id,
-                                     permission_group_id_t group_id,
-                                     std::string_view return_code /*= ""*/)
+        auto request_list(connection_id_t connection_id,
+                          permission_group_id_t group_id,
+                          std::string_view return_code /*= ""*/) -> std::error_code
         {
             return to_ts_errc(ts_funcs.requestChannelGroupPermList(
             connection_id, group_id, return_code.empty() ? nullptr : return_code.data()));
         }
 
-        std::error_code request_set_client(connection_id_t connection_id,
-                                           gsl::span<Set_Client_Channel_Group_Entry> entries,
-                                           std::string_view return_code /*= ""*/)
+        auto request_set_client(connection_id_t connection_id,
+                                gsl::span<Set_Client_Channel_Group_Entry> entries,
+                                std::string_view return_code /*= ""*/) -> std::error_code
         {
             if (entries.empty())
                 return ts_errc::parameter_invalid;
@@ -1712,10 +1723,10 @@ namespace permissions
 
     namespace channel
     {
-        std::error_code request_add_perm(connection_id_t connection_id,
-                                         channel_id_t channel_id,
-                                         gsl::span<Permission_Entry> entries,
-                                         std::string_view return_code /*= ""*/)
+        auto request_add_perm(connection_id_t connection_id,
+                              channel_id_t channel_id,
+                              gsl::span<Permission_Entry> entries,
+                              std::string_view return_code /*= ""*/) -> std::error_code
         {
             if (entries.empty())
                 return ts_errc::parameter_invalid;
@@ -1734,10 +1745,10 @@ namespace permissions
             return_code.empty() ? nullptr : return_code.data()));
         }
 
-        std::error_code request_del_perm(connection_id_t connection_id,
-                                         channel_id_t channel_id,
-                                         gsl::span<permission_id_t> ids,
-                                         std::string_view return_code /*= ""*/)
+        auto request_del_perm(connection_id_t connection_id,
+                              channel_id_t channel_id,
+                              gsl::span<permission_id_t> ids,
+                              std::string_view return_code /*= ""*/) -> std::error_code
         {
             if (ids.empty())
                 return ts_errc::parameter_invalid;
@@ -1747,9 +1758,9 @@ namespace permissions
                                            return_code.empty() ? nullptr : return_code.data()));
         }
 
-        std::error_code request_list(connection_id_t connection_id,
-                                     channel_id_t channel_id,
-                                     std::string_view return_code /*= ""*/)
+        auto request_list(connection_id_t connection_id,
+                          channel_id_t channel_id,
+                          std::string_view return_code /*= ""*/) -> std::error_code
         {
             return to_ts_errc(ts_funcs.requestChannelPermList(
             connection_id, channel_id, return_code.empty() ? nullptr : return_code.data()));
@@ -1759,10 +1770,10 @@ namespace permissions
 
     namespace client
     {
-        std::error_code request_add_perm(connection_id_t connection_id,
-                                         client_db_id_t client_db_id,
-                                         gsl::span<Permission_Entry> entries,
-                                         std::string_view return_code /*= ""*/)
+        auto request_add_perm(connection_id_t connection_id,
+                              client_db_id_t client_db_id,
+                              gsl::span<Permission_Entry> entries,
+                              std::string_view return_code /*= ""*/) -> std::error_code
         {
             if (entries.empty())
                 return ts_errc::parameter_invalid;
@@ -1783,10 +1794,10 @@ namespace permissions
             permission_ids.size(), return_code.empty() ? nullptr : return_code.data()));
         }
 
-        std::error_code request_del_perm(connection_id_t connection_id,
-                                         client_db_id_t client_db_id,
-                                         gsl::span<permission_id_t> ids,
-                                         std::string_view return_code /*= ""*/)
+        auto request_del_perm(connection_id_t connection_id,
+                              client_db_id_t client_db_id,
+                              gsl::span<permission_id_t> ids,
+                              std::string_view return_code /*= ""*/) -> std::error_code
         {
             if (ids.empty())
                 return ts_errc::parameter_invalid;
@@ -1796,9 +1807,9 @@ namespace permissions
                                           return_code.empty() ? nullptr : return_code.data()));
         }
 
-        std::error_code request_list(connection_id_t connection_id,
-                                     client_db_id_t client_db_id,
-                                     std::string_view return_code /*= ""*/)
+        auto request_list(connection_id_t connection_id,
+                          client_db_id_t client_db_id,
+                          std::string_view return_code /*= ""*/) -> std::error_code
         {
             return to_ts_errc(ts_funcs.requestClientPermList(
             connection_id, client_db_id, return_code.empty() ? nullptr : return_code.data()));
@@ -1808,11 +1819,11 @@ namespace permissions
 
     namespace channel_client
     {
-        std::error_code request_add_perm(connection_id_t connection_id,
-                                         channel_id_t channel_id,
-                                         client_db_id_t client_db_id,
-                                         gsl::span<Permission_Entry> entries,
-                                         std::string_view return_code /*= ""*/)
+        auto request_add_perm(connection_id_t connection_id,
+                              channel_id_t channel_id,
+                              client_db_id_t client_db_id,
+                              gsl::span<Permission_Entry> entries,
+                              std::string_view return_code /*= ""*/) -> std::error_code
         {
             if (entries.empty())
                 return ts_errc::parameter_invalid;
@@ -1831,11 +1842,11 @@ namespace permissions
             permission_ids.size(), return_code.empty() ? nullptr : return_code.data()));
         }
 
-        std::error_code request_del_perm(connection_id_t connection_id,
-                                         channel_id_t channel_id,
-                                         client_db_id_t client_db_id,
-                                         gsl::span<permission_id_t> ids,
-                                         std::string_view return_code /*= ""*/)
+        auto request_del_perm(connection_id_t connection_id,
+                              channel_id_t channel_id,
+                              client_db_id_t client_db_id,
+                              gsl::span<permission_id_t> ids,
+                              std::string_view return_code /*= ""*/) -> std::error_code
         {
             if (ids.empty())
                 return ts_errc::parameter_invalid;
@@ -1845,33 +1856,35 @@ namespace permissions
             return_code.empty() ? nullptr : return_code.data()));
         }
 
-        std::error_code request_list(connection_id_t connection_id,
-                                     channel_id_t channel_id,
-                                     client_db_id_t client_db_id,
-                                     std::string_view return_code /*= ""*/)
+        auto request_list(connection_id_t connection_id,
+                          channel_id_t channel_id,
+                          client_db_id_t client_db_id,
+                          std::string_view return_code /*= ""*/) -> std::error_code
         {
             return to_ts_errc(ts_funcs.requestChannelClientPermList(
             connection_id, channel_id, client_db_id, return_code.empty() ? nullptr : return_code.data()));
         }
     }  // namespace channel_client
 
-    std::error_code
-    privilege_key_use(connection_id_t connection_id, std::string_view token, std::string_view return_code)
+    auto privilege_key_use(connection_id_t connection_id,
+                           std::string_view token,
+                           std::string_view return_code) -> std::error_code
     {
         return to_ts_errc(ts_funcs.privilegeKeyUse(connection_id, token.data(),
                                                    return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code request_permission_list(connection_id_t connection_id, std::string_view return_code)
+    auto request_permission_list(connection_id_t connection_id, std::string_view return_code)
+    -> std::error_code
     {
         return to_ts_errc(
         ts_funcs.requestPermissionList(connection_id, return_code.empty() ? nullptr : return_code.data()));
     }
 
-    std::error_code request_permission_overview(connection_id_t connection_id,
-                                                client_db_id_t client_db_id,
-                                                channel_id_t channel_id,
-                                                std::string_view return_code /*= ""*/)
+    auto request_permission_overview(connection_id_t connection_id,
+                                     client_db_id_t client_db_id,
+                                     channel_id_t channel_id,
+                                     std::string_view return_code /*= ""*/) -> std::error_code
     {
         return to_ts_errc(ts_funcs.requestPermissionOverview(
         connection_id, client_db_id, channel_id, return_code.empty() ? nullptr : return_code.data()));
@@ -1881,7 +1894,7 @@ namespace permissions
 
 /* Client functions */
 
-std::string get_app_path()
+auto get_app_path() -> std::string
 {
     auto path_ = std::array<char, kPathBufferSize>{};
     // TODO we trust here that the string is terminated
@@ -1889,7 +1902,7 @@ std::string get_app_path()
     return {path_.data()};
 }
 
-std::string get_resources_path()
+auto get_resources_path() -> std::string
 {
     auto path_ = std::array<char, kPathBufferSize>{};
     // TODO we trust here that the string is terminated
@@ -1897,7 +1910,7 @@ std::string get_resources_path()
     return {path_.data()};
 }
 
-std::string get_config_path()
+auto get_config_path() -> std::string
 {
     auto path_ = std::array<char, kPathBufferSize>{};
     // TODO we trust here that the string is terminated
@@ -1905,7 +1918,7 @@ std::string get_config_path()
     return {path_.data()};
 }
 
-std::string get_plugin_path(std::string_view plugin_id)
+auto get_plugin_path(std::string_view plugin_id) -> std::string
 {
     auto path_ = std::array<char, kPathBufferSize>{};
     // TODO we trust here that the string is terminated
@@ -1913,7 +1926,7 @@ std::string get_plugin_path(std::string_view plugin_id)
     return {path_.data()};
 }
 
-connection_id_t get_current_server_connection_handler_id()
+auto get_current_server_connection_handler_id() -> connection_id_t
 {
     return ts_funcs.getCurrentServerConnectionHandlerID();
 }
@@ -1930,7 +1943,7 @@ void print_message_to_current_tab(std::string_view message)
     ts_funcs.printMessageToCurrentTab(message.data());
 }
 
-std::string urls_to_bb(std::string_view text, size_t max_len)
+auto urls_to_bb(std::string_view text, size_t max_len) -> std::string
 {
     if (text.empty())
         return {};
@@ -1956,7 +1969,7 @@ void send_plugin_command(connection_id_t connection_id,
 // TODO this is buggy in that it uses space as delimiter for the list entries
 // given that this doesn't do anything TeamSpeak related(?!), I'm gonna call:
 // deprecated
-std::string get_directories(std::string_view path, size_t max_len)
+auto get_directories(std::string_view path, size_t max_len) -> std::string
 {
     if (path.empty())
         return {};
@@ -1967,8 +1980,8 @@ std::string get_directories(std::string_view path, size_t max_len)
     return std::string(result_c.data());
 }
 
-std::tuple<std::error_code, std::string, uint16_t, std::string>
-get_server_connect_info(connection_id_t connection_id)
+auto get_server_connect_info(connection_id_t connection_id)
+-> std::tuple<std::error_code, std::string, uint16_t, std::string>
 {
     auto host = std::array<char, kServerInfoBufferSize>();
     auto port = uint16_t{0};
@@ -1986,8 +1999,8 @@ get_server_connect_info(connection_id_t connection_id)
             pw.empty() ? std::string{} : std::string{pw.data()}};
 }
 
-std::tuple<std::error_code, std::string, std::string> get_channel_connect_info(connection_id_t connection_id,
-                                                                               channel_id_t channel_id)
+auto get_channel_connect_info(connection_id_t connection_id, channel_id_t channel_id)
+-> std::tuple<std::error_code, std::string, std::string>
 {
     auto path = std::array<char, kChannelInfoBufferSize>();
     auto pw = std::array<char, kChannelInfoBufferSize>();
@@ -2004,7 +2017,7 @@ std::tuple<std::error_code, std::string, std::string> get_channel_connect_info(c
             pw.empty() ? std::string{} : std::string{pw.data()}};
 }
 
-std::string create_return_code(std::string_view plugin_id)
+auto create_return_code(std::string_view plugin_id) -> std::string
 {
     auto result_c = std::array<char, kReturnCodeBufferSize>();
     ts_funcs.createReturnCode(plugin_id.data(), result_c.data(), kReturnCodeBufferSize);
@@ -2014,32 +2027,35 @@ std::string create_return_code(std::string_view plugin_id)
     return std::string{result_c.data()};
 }
 
-std::error_code request_info_update(connection_id_t connection_id, PluginItemType item_type, uint64_t item_id)
+auto request_info_update(connection_id_t connection_id, PluginItemType item_type, uint64_t item_id)
+-> std::error_code
 {
     return to_ts_errc(ts_funcs.requestInfoUpdate(connection_id, item_type, item_id));
 }
 
-uint64_t get_server_version(connection_id_t connection_id)
+auto get_server_version(connection_id_t connection_id) -> uint64_t
 {
     return ts_funcs.getServerVersion(connection_id);
 }
 
-std::tuple<std::error_code, bool> is_whispering(connection_id_t connection_id, client_id_t client_id)
+auto is_whispering(connection_id_t connection_id, client_id_t client_id) -> std::tuple<std::error_code, bool>
 {
     int result = 0;
     const auto error = to_ts_errc(ts_funcs.isWhispering(connection_id, client_id, &result));
     return {error, !!result};
 }
 
-std::tuple<std::error_code, bool> is_receiving_whisper(connection_id_t connection_id, client_id_t client_id)
+auto is_receiving_whisper(connection_id_t connection_id, client_id_t client_id)
+-> std::tuple<std::error_code, bool>
 {
-    int32_t is_receiving_whisper;
+    auto is_receiving_whisper = int32_t{0};
     const auto error =
     to_ts_errc(ts_funcs.isReceivingWhisper(connection_id, client_id, &is_receiving_whisper));
     return {error, !!is_receiving_whisper};
 }
 
-std::tuple<std::error_code, std::string> get_avatar(connection_id_t connection_id, client_id_t client_id)
+auto get_avatar(connection_id_t connection_id, client_id_t client_id)
+-> std::tuple<std::error_code, std::string>
 {
     auto result_c = std::array<char, kPathBufferSize>();
     const auto error =
@@ -2068,8 +2084,9 @@ void request_hotkey_input_dialog(std::string_view plugin_id,
     ts_funcs.requestHotkeyInputDialog(plugin_id.data(), keyword.data(), is_down ? 1 : 0, q_parent_window);
 }
 
-std::tuple<std::error_code, std::vector<std::string>>
-get_hotkey_from_keyword(std::string_view plugin_id, gsl::span<std::string_view> keywords, int32_t max_results)
+auto get_hotkey_from_keyword(std::string_view plugin_id,
+                             gsl::span<std::string_view> keywords,
+                             int32_t max_results) -> std::tuple<std::error_code, std::vector<std::string>>
 {
     auto keywords_ = std::vector<const char *>{};
     for (const auto &keyword : keywords)
@@ -2095,8 +2112,8 @@ get_hotkey_from_keyword(std::string_view plugin_id, gsl::span<std::string_view> 
     return {error, result};
 }
 
-std::tuple<std::error_code, std::string> get_client_display_name(connection_id_t connection_id,
-                                                                 client_id_t client_id)
+auto get_client_display_name(connection_id_t connection_id, client_id_t client_id)
+-> std::tuple<std::error_code, std::string>
 {
     auto result = std::array<char, kDisplayNameBufferSize>{};
     const auto error =
@@ -2104,9 +2121,9 @@ std::tuple<std::error_code, std::string> get_client_display_name(connection_id_t
     return {error, {result.data()}};
 }
 
-std::tuple<std::error_code, PluginBookmarkList *> get_bookmark_list()
+auto get_bookmark_list() -> std::tuple<std::error_code, PluginBookmarkList *>
 {
-    struct PluginBookmarkList *list;
+    struct PluginBookmarkList *list = nullptr;
     const auto error = to_ts_errc(ts_funcs.getBookmarkList(&list));
     return {error, list};
 }
@@ -2130,7 +2147,7 @@ void free_bookmark_list(PluginBookmarkList *list)
     ts_funcs.freeMemory(list);
 }
 
-std::tuple<std::error_code, int, std::vector<std::string>> get_profile_list(PluginGuiProfile profile)
+auto get_profile_list(PluginGuiProfile profile) -> std::tuple<std::error_code, int, std::vector<std::string>>
 {
     std::vector<std::string> result;
     char **profiles = nullptr;
@@ -2148,20 +2165,20 @@ std::tuple<std::error_code, int, std::vector<std::string>> get_profile_list(Plug
     return {error, default_profile, result};
 }
 
-std::tuple<std::error_code, connection_id_t> gui_connect(PluginConnectTab connect_tab,
-                                                         std::string_view server_label,
-                                                         std::string_view server_address,
-                                                         std::string_view server_pw,
-                                                         std::string_view nickname,
-                                                         std::string_view channel,
-                                                         std::string_view channel_pw,
-                                                         std::string_view capture_profile,
-                                                         std::string_view playback_profile,
-                                                         std::string_view hotkey_profile,
-                                                         std::string_view sound_profile,
-                                                         std::string_view user_identity,
-                                                         std::string_view one_time_key,
-                                                         std::string_view phonetic_name)
+auto gui_connect(PluginConnectTab connect_tab,
+                 std::string_view server_label,
+                 std::string_view server_address,
+                 std::string_view server_pw,
+                 std::string_view nickname,
+                 std::string_view channel,
+                 std::string_view channel_pw,
+                 std::string_view capture_profile,
+                 std::string_view playback_profile,
+                 std::string_view hotkey_profile,
+                 std::string_view sound_profile,
+                 std::string_view user_identity,
+                 std::string_view one_time_key,
+                 std::string_view phonetic_name) -> std::tuple<std::error_code, connection_id_t>
 {
     auto result = connection_id_t{0};
     const auto error = to_ts_errc(ts_funcs.guiConnect(
@@ -2171,28 +2188,28 @@ std::tuple<std::error_code, connection_id_t> gui_connect(PluginConnectTab connec
     return {error, result};
 }
 
-std::tuple<std::error_code, connection_id_t> gui_connect_bookmark(PluginConnectTab connect_tab,
-                                                                  std::string_view bookmark_uuid)
+auto gui_connect_bookmark(PluginConnectTab connect_tab, std::string_view bookmark_uuid)
+-> std::tuple<std::error_code, connection_id_t>
 {
     auto result = connection_id_t{0};
     const auto error = to_ts_errc(ts_funcs.guiConnectBookmark(connect_tab, bookmark_uuid.data(), &result));
     return {error, result};
 }
 
-std::error_code create_bookmark(std::string_view bookmark_uuid,
-                                std::string_view server_label,
-                                std::string_view server_address,
-                                std::string_view server_pw,
-                                std::string_view nickname,
-                                std::string_view channel,
-                                std::string_view channel_pw,
-                                std::string_view capture_profile,
-                                std::string_view playback_profile,
-                                std::string_view hotkey_profile,
-                                std::string_view sound_profile,
-                                std::string_view client_uid,
-                                std::string_view one_time_key,
-                                std::string_view phonetic_name)
+auto create_bookmark(std::string_view bookmark_uuid,
+                     std::string_view server_label,
+                     std::string_view server_address,
+                     std::string_view server_pw,
+                     std::string_view nickname,
+                     std::string_view channel,
+                     std::string_view channel_pw,
+                     std::string_view capture_profile,
+                     std::string_view playback_profile,
+                     std::string_view hotkey_profile,
+                     std::string_view sound_profile,
+                     std::string_view client_uid,
+                     std::string_view one_time_key,
+                     std::string_view phonetic_name) -> std::error_code
 {
     // TODO how would an addon create a valid new uuid?
     if (bookmark_uuid.empty())
@@ -2219,8 +2236,8 @@ std::error_code create_bookmark(std::string_view bookmark_uuid,
     phonetic_name.empty() ? nullptr : phonetic_name.data()));
 }
 
-std::tuple<std::error_code, uint32_t> get_permission_id_by_name(connection_id_t connection_id,
-                                                                std::string_view permissionName)
+auto get_permission_id_by_name(connection_id_t connection_id, std::string_view permissionName)
+-> std::tuple<std::error_code, uint32_t>
 {
     auto result = uint32_t{0};
     const auto error =
@@ -2228,8 +2245,8 @@ std::tuple<std::error_code, uint32_t> get_permission_id_by_name(connection_id_t 
     return {error, result};
 }
 
-std::tuple<std::error_code, int32_t> get_client_needed_permission(connection_id_t connection_id,
-                                                                  std::string_view permissionName)
+auto get_client_needed_permission(connection_id_t connection_id, std::string_view permissionName)
+-> std::tuple<std::error_code, int32_t>
 {
     auto result = int32_t{0};
     const auto error =
@@ -2242,25 +2259,27 @@ void notify_key_event(std::string_view pluginID, std::string_view keyIdentifier,
     ts_funcs.notifyKeyEvent(pluginID.data(), keyIdentifier.data(), up_down ? 1 : 0);
 }
 
-std::error_code
-start_recording(connection_id_t connection_id, bool multitrack, bool noFileSelector, std::string_view path)
+auto start_recording(connection_id_t connection_id,
+                     bool multitrack,
+                     bool noFileSelector,
+                     std::string_view path) -> std::error_code
 {
     return to_ts_errc(
     ts_funcs.startRecording(connection_id, multitrack ? 1 : 0, noFileSelector ? 1 : 0, path.data()));
 }
 
-std::error_code stop_recording(connection_id_t connection_id)
+auto stop_recording(connection_id_t connection_id) -> std::error_code
 {
     return to_ts_errc(ts_funcs.stopRecording(connection_id));
 }
 
 /* Convenience functions */
 
-std::error_code request_clients_move(connection_id_t connection_id,
-                                     gsl::span<client_id_t> target_client_ids,
-                                     channel_id_t new_channel_id,
-                                     std::string_view password,
-                                     std::string_view return_code /*= ""*/)
+auto request_clients_move(connection_id_t connection_id,
+                          gsl::span<client_id_t> target_client_ids,
+                          channel_id_t new_channel_id,
+                          std::string_view password,
+                          std::string_view return_code /*= ""*/) -> std::error_code
 {
     if (target_client_ids.empty())
         return ts_errc::parameter_invalid;
@@ -2274,11 +2293,11 @@ std::error_code request_clients_move(connection_id_t connection_id,
                                                   return_code.empty() ? nullptr : return_code.data()));
 }
 
-std::error_code request_clients_kick(connection_id_t connection_id,
-                                     gsl::span<client_id_t> target_client_ids,
-                                     Kick_From kick_from,
-                                     std::string_view reason,
-                                     std::string_view return_code /*= ""*/)
+auto request_clients_kick(connection_id_t connection_id,
+                          gsl::span<client_id_t> target_client_ids,
+                          Kick_From kick_from,
+                          std::string_view reason,
+                          std::string_view return_code /*= ""*/) -> std::error_code
 {
     auto error = ts_errc::parameter_invalid;
     if (target_client_ids.empty())
@@ -2306,7 +2325,7 @@ std::error_code request_clients_kick(connection_id_t connection_id,
 
 /* Helpers */
 
-std::tuple<std::error_code, std::string> get_client_property_name(size_t flag)
+auto get_client_property_name(size_t flag) -> std::tuple<std::error_code, std::string>
 {
     std::string result;
     char *result_c = nullptr;
@@ -2319,7 +2338,7 @@ std::tuple<std::error_code, std::string> get_client_property_name(size_t flag)
     return {error, result};
 }
 
-std::tuple<std::error_code, std::string> get_channel_property_name(size_t flag)
+auto get_channel_property_name(size_t flag) -> std::tuple<std::error_code, std::string>
 {
     std::string result;
     char *result_c = nullptr;
@@ -2332,7 +2351,7 @@ std::tuple<std::error_code, std::string> get_channel_property_name(size_t flag)
     return {error, result};
 }
 
-std::tuple<std::error_code, std::string> get_server_property_name(size_t flag)
+auto get_server_property_name(size_t flag) -> std::tuple<std::error_code, std::string>
 {
     std::string result;
     char *result_c = nullptr;
@@ -2345,23 +2364,23 @@ std::tuple<std::error_code, std::string> get_server_property_name(size_t flag)
     return {error, result};
 }
 
-std::tuple<std::error_code, size_t> get_client_property_flag(std::string_view name)
+auto get_client_property_flag(std::string_view name) -> std::tuple<std::error_code, size_t>
 {
-    size_t value;
+    auto value = size_t{0};
     const auto error = to_ts_errc(ts_funcs.clientPropertyStringToFlag(name.data(), &value));
     return {error, (ts_errc::ok == error) ? value : 0};
 }
 
-std::tuple<std::error_code, size_t> get_channel_property_flag(std::string_view name)
+auto get_channel_property_flag(std::string_view name) -> std::tuple<std::error_code, size_t>
 {
-    size_t value;
+    auto value = size_t{0};
     const auto error = to_ts_errc(ts_funcs.channelPropertyStringToFlag(name.data(), &value));
     return {error, (ts_errc::ok == error) ? value : 0};
 }
 
-std::tuple<std::error_code, size_t> get_server_property_flag(std::string_view name)
+auto get_server_property_flag(std::string_view name) -> std::tuple<std::error_code, size_t>
 {
-    size_t value;
+    auto value = size_t{0};
     const auto error = to_ts_errc(ts_funcs.serverPropertyStringToFlag(name.data(), &value));
     return {error, (ts_errc::ok == error) ? value : 0};
 }

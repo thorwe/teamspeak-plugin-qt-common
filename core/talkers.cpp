@@ -14,7 +14,7 @@ Talkers::Talkers(QObject* parent)
 	: QObject(parent)
 {}
 
-std::error_code Talkers::RefreshTalkers(com::teamspeak::connection_id_t connection_id)
+auto Talkers::RefreshTalkers(com::teamspeak::connection_id_t connection_id) -> std::error_code
 {
     const auto[error_connection_status, connection_status] = funcs::get_connection_status(connection_id);
     if (ts_errc::ok != error_connection_status)
@@ -65,7 +65,7 @@ std::error_code Talkers::RefreshTalkers(com::teamspeak::connection_id_t connecti
     return ts_errc::ok;
 }
 
-std::error_code Talkers::RefreshAllTalkers()
+auto Talkers::RefreshAllTalkers() -> std::error_code
 {
     const auto[error_connection_ids, connection_ids] = funcs::get_server_connection_handler_ids();
     if (ts_errc::ok != error_connection_ids)
@@ -81,7 +81,7 @@ std::error_code Talkers::RefreshAllTalkers()
 
 void Talkers::DumpTalkStatusChanges(QObject *p, int status)
 {
-    auto iTalk = qobject_cast<TalkInterface*>(p);
+    auto *iTalk = qobject_cast<TalkInterface *>(p);
     if (!iTalk)
     {
         TSLogging::Error("(Talkers) (DumpTalkStatusChange) Pointer doesn't implement TalkInterface");
@@ -112,8 +112,8 @@ void Talkers::DumpTalkStatusChanges(QObject *p, int status)
     }
 }
 
-std::vector<Talkers::Talkers_Info> Talkers::get_infos(Talker_Type talker_type,
-                                                      com::teamspeak::connection_id_t connection_id) const
+auto Talkers::get_infos(Talker_Type talker_type, com::teamspeak::connection_id_t connection_id) const
+-> std::vector<Talkers::Talkers_Info>
 {
     auto lock = std::shared_lock(m_mutex);
     auto result = std::vector<Talkers::Talkers_Info>{};
@@ -138,10 +138,10 @@ std::vector<Talkers::Talkers_Info> Talkers::get_infos(Talker_Type talker_type,
     return result;
 }
 
-bool Talkers::onTalkStatusChangeEvent(com::teamspeak::connection_id_t connection_id,
+auto Talkers::onTalkStatusChangeEvent(com::teamspeak::connection_id_t connection_id,
                                       int status,
                                       int is_received_whisper,
-                                      com::teamspeak::client_id_t client_id)
+                                      com::teamspeak::client_id_t client_id) -> bool
 {
     const auto [error_my_id, my_id] = funcs::get_client_id(connection_id);
     if (ts_errc::ok != error_my_id)
@@ -213,7 +213,7 @@ void Talkers::onConnectStatusChangeEvent(com::teamspeak::connection_id_t connect
                                           talker.is_whispering ? 1 : 0, talker.client_id);
 }
 
-com::teamspeak::connection_id_t Talkers::isMeTalking() const
+auto Talkers::isMeTalking() const -> com::teamspeak::connection_id_t
 {
     auto lock = std::shared_lock(m_mutex);
     return m_me_talking_connection_id;

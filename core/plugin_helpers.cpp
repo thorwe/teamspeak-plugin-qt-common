@@ -13,7 +13,7 @@ using namespace com::teamspeak::pluginsdk;
 namespace teamspeak::plugin
 {
 
-std::filesystem::path get_path(Path path)
+auto get_path(Path path) -> std::filesystem::path
 {
     std::filesystem::path result;
 

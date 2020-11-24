@@ -4,7 +4,7 @@
 
 namespace com::teamspeak
 {
-ts_errc to_ts_errc(uint32_t err)
+auto to_ts_errc(uint32_t err) -> ts_errc
 {
     return static_cast<ts_errc>(err);
 }
@@ -15,16 +15,16 @@ namespace
 
 struct TsErrCategory : std::error_category
 {
-    [[nodiscard]] const char *name() const noexcept override;
-    [[nodiscard]] std::string message(int ev) const override;
+    [[nodiscard]] auto name() const noexcept -> const char * override;
+    [[nodiscard]] auto message(int ev) const -> std::string override;
 };
 
-const char *TsErrCategory::name() const noexcept
+auto TsErrCategory::name() const noexcept -> const char *
 {
     return "TeamSpeak";
 }
 
-std::string TsErrCategory::message(int ev) const
+auto TsErrCategory::message(int ev) const -> std::string
 {
     return com::teamspeak::pluginsdk::funcs::get_error_message(ev);
 }
@@ -33,7 +33,7 @@ const TsErrCategory theTsErrCategory{};
 
 }  // anonymous namespace
 
-std::error_code make_error_code(ts_errc e)
+auto make_error_code(ts_errc e) -> std::error_code
 {
     return {static_cast<int>(e), theTsErrCategory};
 }

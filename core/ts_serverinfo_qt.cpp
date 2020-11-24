@@ -16,12 +16,12 @@ TSServerInfo::TSServerInfo(QObject *parent, uint64 server_connection_id)
 	, m_server_connection_id(server_connection_id)
 {}
 
-uint64 TSServerInfo::getServerConnectionHandlerID() const
+auto TSServerInfo::getServerConnectionHandlerID() const -> uint64
 {
     return m_server_connection_id;
 }
 
-QString TSServerInfo::getName() const
+auto TSServerInfo::getName() const -> QString
 {
     const auto [error_server_name, server_name] = funcs::get_server_property_as_string(m_server_connection_id, VIRTUALSERVER_NAME);
     if (ts_errc::ok != error_server_name)
@@ -33,7 +33,7 @@ QString TSServerInfo::getName() const
     return QString::fromUtf8(server_name.data());
 }
 
-QString TSServerInfo::getUniqueId() const
+auto TSServerInfo::getUniqueId() const -> QString
 {
     const auto [error_server_uid, server_uid] = funcs::get_server_property_as_string(m_server_connection_id, VIRTUALSERVER_UNIQUE_IDENTIFIER);
     if (ts_errc::ok != error_server_uid)
@@ -44,7 +44,7 @@ QString TSServerInfo::getUniqueId() const
     return QString::fromUtf8(server_uid.data());
 }
 
-uint64 TSServerInfo::getDefaultChannelGroup() const
+auto TSServerInfo::getDefaultChannelGroup() const -> uint64
 {
     const auto [error_default_channel_group, default_channel_group] = funcs::get_server_property_as_uint64(m_server_connection_id, VIRTUALSERVER_DEFAULT_CHANNEL_GROUP);
     if (ts_errc::ok != error_default_channel_group)
@@ -55,12 +55,12 @@ uint64 TSServerInfo::getDefaultChannelGroup() const
     return default_channel_group;
 }
 
-uint64 TSServerInfo::GetServerGroupId(const QString &name) const
+auto TSServerInfo::GetServerGroupId(const QString &name) const -> uint64
 {
     return (m_server_groups.key(name, (uint64)NULL));
 }
 
-QString TSServerInfo::GetServerGroupName(uint64 id) const
+auto TSServerInfo::GetServerGroupName(uint64 id) const -> QString
 {
     if (m_server_groups.contains(id))
         return m_server_groups.value(id);
@@ -68,7 +68,7 @@ QString TSServerInfo::GetServerGroupName(uint64 id) const
     return QString::null;
 }
 
-uint64 TSServerInfo::GetChannelGroupId(const QString &name) const
+auto TSServerInfo::GetChannelGroupId(const QString &name) const -> uint64
 {
     const auto list = m_channel_groups.keys(name);
     const auto element_count = list.size();
@@ -88,7 +88,7 @@ uint64 TSServerInfo::GetChannelGroupId(const QString &name) const
     return highest;
 }
 
-QString TSServerInfo::GetChannelGroupName(uint64 id) const
+auto TSServerInfo::GetChannelGroupName(uint64 id) const -> QString
 {
     if (m_channel_groups.contains(id))
         return m_channel_groups.value(id);

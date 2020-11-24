@@ -27,7 +27,7 @@ void TSSettings::Init(const QString &tsConfigPath)
  * \param result the result will be put in here
  * \return true on success, false when an error has occurred
  */
-bool TSSettings::GetSoundPack(QString &result)
+auto TSSettings::GetSoundPack(QString &result) -> bool
 {
     if (!(GetValueFromQuery("SELECT value FROM Notifications WHERE key='SoundPack'", result, false)))
     {
@@ -43,7 +43,7 @@ bool TSSettings::GetSoundPack(QString &result)
  * \param result the result will be put in here
  * \return true on success, false when an error has occurred
  */
-bool TSSettings::GetIconPack(QString &result)
+auto TSSettings::GetIconPack(QString &result) -> bool
 {
     if (!(GetValueFromQuery("SELECT value FROM Application WHERE key='IconPack'", result, false)))
     {
@@ -59,7 +59,7 @@ bool TSSettings::GetIconPack(QString &result)
  * \param result the result will be put in here
  * \return true on success, false when an error has occurred
  */
-bool TSSettings::GetDefaultCaptureProfile(QString &result)
+auto TSSettings::GetDefaultCaptureProfile(QString &result) -> bool
 {
     if (!(GetValueFromQuery("SELECT value FROM Profiles WHERE key='DefaultCaptureProfile'", result, false)))
     {
@@ -76,7 +76,7 @@ bool TSSettings::GetDefaultCaptureProfile(QString &result)
  * \param result the result will be put in here
  * \return true on success, false when an error has occurred
  */
-bool TSSettings::GetPreProcessorData(const QString &profile, QString &result)
+auto TSSettings::GetPreProcessorData(const QString &profile, QString &result) -> bool
 {
     QString query("SELECT value FROM Profiles WHERE key='Capture/" + profile + "/PreProcessing'");
     if (!(GetValueFromQuery(query, result, false)))
@@ -93,7 +93,7 @@ bool TSSettings::GetPreProcessorData(const QString &profile, QString &result)
  * \param result the result will be put in here
  * \return true on success, false when an error has occurred
  */
-bool TSSettings::GetBookmarks(QStringList &result)
+auto TSSettings::GetBookmarks(QStringList &result) -> bool
 {
     QString query("SELECT value FROM Bookmarks");
     if (!(GetValuesFromQuery(query, result)))
@@ -112,7 +112,7 @@ bool TSSettings::GetBookmarks(QStringList &result)
  * \return true on success, false when an error has occurred; note that not found is a non-error -> success;
  * just check if the QMap is empty for that
  */
-bool TSSettings::GetBookmarkByServerUID(QString sUID, QMap<QString, QString> &result)
+auto TSSettings::GetBookmarkByServerUID(QString sUID, QMap<QString, QString> &result) -> bool
 {
     QStringList bookmarks;
     if (!GetBookmarks(bookmarks))
@@ -137,7 +137,7 @@ bool TSSettings::GetBookmarkByServerUID(QString sUID, QMap<QString, QString> &re
  * \param result the result will be put in here
  * \return true on success, false when an error has occurred
  */
-bool TSSettings::GetContacts(QStringList &result)
+auto TSSettings::GetContacts(QStringList &result) -> bool
 {
     QString query("SELECT value FROM Contacts");
     if (!(GetValuesFromQuery(query, result)))
@@ -148,7 +148,7 @@ bool TSSettings::GetContacts(QStringList &result)
     return true;
 }
 
-/*bool TSSettings::GetContactFromUniqueId(const char* clientUniqueID, QMap<QString,QString> result)
+/*auto TSSettings::GetContactFromUniqueId(const char* clientUniqueID, QMap<QString,QString> result) -> bool
 {
     QStringList contacts;
     if (!(GetContacts(contacts)))
@@ -165,7 +165,7 @@ bool TSSettings::GetContacts(QStringList &result)
  * fallback to OS language \param result the result will be put in here \return true on success, false when an
  * error has occurred
  */
-bool TSSettings::GetLanguage(QString &result)
+auto TSSettings::GetLanguage(QString &result) -> bool
 {
     QString query("SELECT value FROM Application WHERE key='Language'");  //"","enUS","deDE"...
     if (!(GetValueFromQuery(query, result, true)))
@@ -180,7 +180,7 @@ bool TSSettings::GetLanguage(QString &result)
     return true;
 }
 
-bool TSSettings::Is3DSoundEnabled(bool &result)
+auto TSSettings::Is3DSoundEnabled(bool &result) -> bool
 {
     QString qstr_result;
     QString query("SELECT value FROM Application WHERE key='3DSoundEnabled'");
@@ -193,7 +193,7 @@ bool TSSettings::Is3DSoundEnabled(bool &result)
     return true;
 }
 
-bool TSSettings::Set3DSoundEnabled(bool val)
+auto TSSettings::Set3DSoundEnabled(bool val) -> bool
 {
     QSqlQuery q_query(
     QString("UPDATE Application SET value='%1' WHERE key='3DSoundEnabled'").arg((val) ? "1" : "0"),
@@ -216,7 +216,7 @@ bool TSSettings::Set3DSoundEnabled(bool val)
  * \brief TSSettings::GetLastError Returns the last SQL Error
  * \return a QSqlError
  */
-QSqlError TSSettings::GetLastError()
+auto TSSettings::GetLastError() -> QSqlError
 {
     return error_qsql;
 }
@@ -229,7 +229,7 @@ QSqlError TSSettings::GetLastError()
  * \param value the value
  * \return a QMap
  */
-QMap<QString, QString> TSSettings::GetMapFromValue(const QString &value)
+auto TSSettings::GetMapFromValue(const QString &value) -> QMap<QString, QString>
 {
     QMap<QString, QString> result;
     auto qstrl_value = value.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
@@ -249,9 +249,9 @@ QMap<QString, QString> TSSettings::GetMapFromValue(const QString &value)
  * \param isEmptyValid determines, if an empty result is considered an error
  * \return true on success, false when an error has occurred
  */
-bool TSSettings::GetValueFromQuery(const QString &query,
+auto TSSettings::GetValueFromQuery(const QString &query,
                                    QString &result,
-                                   bool isEmptyValid)  // provides first valid
+                                   bool isEmptyValid) -> bool  // provides first valid
 {
     QSqlQuery q_query(query, m_SettingsDb);
     if (!q_query.exec())
@@ -346,7 +346,7 @@ bool TSSettings::GetValueFromQuery(const QString &query,
  * \param result the result will be put in here
  * \return true on success, false when an error has occurred
  */
-bool TSSettings::GetValuesFromQuery(const QString &query, QStringList &result)  // proper result list
+auto TSSettings::GetValuesFromQuery(const QString &query, QStringList &result) -> bool  // proper result list
 {
     QSqlQuery q_query(query, m_SettingsDb);
     if (!q_query.exec())

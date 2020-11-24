@@ -14,12 +14,12 @@ TSInfoData::TSInfoData(QObject *parent)
 	: QObject(parent)
 {}
 
-PluginItemType TSInfoData::getInfoType() const
+auto TSInfoData::getInfoType() const -> PluginItemType
 {
     return m_info_type;
 }
 
-uint64 TSInfoData::getInfoId() const
+auto TSInfoData::getInfoId() const -> uint64
 {
     return m_info_id;
 }
@@ -74,9 +74,9 @@ void TSInfoData::RequestSelfUpdate()
     }
 }
 
-bool TSInfoData::Register(QObject *p, bool is_register, int priority)
+auto TSInfoData::Register(QObject *p, bool is_register, int priority) -> bool
 {
-    auto iInfoData = qobject_cast<InfoDataInterface *>(p);
+    auto *iInfoData = qobject_cast<InfoDataInterface *>(p);
     if (!iInfoData)
         return false;
 
@@ -150,7 +150,7 @@ void TSInfoData::onInfoData(uint64 connection_id, uint64 id, enum PluginItemType
         auto&& cbk = it.value();
         if (cbk)
         {
-            auto i_info = qobject_cast<InfoDataInterface *>(cbk);
+            auto *i_info = qobject_cast<InfoDataInterface *>(cbk);
             if (i_info->onInfoDataChanged(connection_id, id, type, mine, data_stream))
                 data_stream << ".\n";
         }

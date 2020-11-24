@@ -17,7 +17,7 @@ void DspVolumeDucker::set_processing(bool val)
 
 
 // virtual funcs
-float DspVolumeDucker::fade_step(size_t frame_count)
+auto DspVolumeDucker::fade_step(size_t frame_count) -> float
 {
     // compute ducker gain
     float current_gain = gain_current();

@@ -1,6 +1,6 @@
 #include "core/module.h"
 
-bool Module::running() const
+auto Module::running() const -> bool
 {
     return (m_enabled.load() && !m_blocked.load());
 }

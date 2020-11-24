@@ -18,12 +18,11 @@ Plugin_Base::Plugin_Base(const char* plugin_id, QObject *parent)
 	, kPluginId(plugin_id)
 {}
 
-const std::string& Plugin_Base::id() const
+auto Plugin_Base::id() const -> const std::string &
 {
 	return kPluginId;
 }
-
-Translator& Plugin_Base::translator()
+auto Plugin_Base::translator() -> Translator &
 {
 	if (!m_translator)
 		m_translator = new Translator(this);
@@ -31,7 +30,7 @@ Translator& Plugin_Base::translator()
 	return *m_translator;
 }
 
-TSContextMenu& Plugin_Base::context_menu()
+auto Plugin_Base::context_menu() -> TSContextMenu &
 {
 	if (!m_context_menu)
 		m_context_menu = new TSContextMenu(this);
@@ -39,7 +38,7 @@ TSContextMenu& Plugin_Base::context_menu()
 	return *m_context_menu;
 }
 
-TSInfoData& Plugin_Base::info_data()
+auto Plugin_Base::info_data() -> TSInfoData &
 {
 	if (!m_info_data)
 		m_info_data = new TSInfoData(this);
@@ -47,7 +46,7 @@ TSInfoData& Plugin_Base::info_data()
 	return *m_info_data;
 }
 
-Talkers& Plugin_Base::talkers()
+auto Plugin_Base::talkers() -> Talkers &
 {
 	if (!m_talkers)
 		m_talkers = new Talkers(this);
@@ -55,7 +54,7 @@ Talkers& Plugin_Base::talkers()
 	return *m_talkers;
 }
 
-int Plugin_Base::init()
+auto Plugin_Base::init() -> int
 {
 	TSLogging::Log("init");
 
@@ -225,11 +224,11 @@ void Plugin_Base::onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID
 		on_client_move_moved(serverConnectionHandlerID, clientID, oldChannelID, newChannelID, visibility, kMyId, moverID, moverName, moverUniqueIdentifier, moveMessage);
 }
 
-int Plugin_Base::onServerError(uint64 sch_id,
-                               const char *error_message,
-                               unsigned int error,
-                               const char *return_code,
-                               const char *extra_message)
+auto Plugin_Base::onServerError(uint64 sch_id,
+                                const char *error_message,
+                                unsigned int error,
+                                const char *return_code,
+                                const char *extra_message) -> int
 {
     return on_server_error(sch_id, error_message ? error_message : std::string_view{},
                            com::teamspeak::to_ts_errc(error), return_code ? return_code : std::string_view{},
@@ -257,13 +256,13 @@ void Plugin_Base::onEditPostProcessVoiceDataEvent(uint64 serverConnectionHandler
 void Plugin_Base::onMenuItemEvent(uint64 serverConnectionHandlerID, PluginMenuType type, int menuItemID, uint64 selectedItemID)
 {
 	context_menu().onMenuItemEvent(serverConnectionHandlerID, type, menuItemID, selectedItemID);
-	PluginItemType itype;
-	switch (type)
+    PluginItemType itype = PLUGIN_SERVER;
+    switch (type)
 	{
 	case PLUGIN_MENU_TYPE_GLOBAL:
 		/* Global menu item was triggered. selectedItemID is unused and set to zero. */
-		itype = PLUGIN_SERVER;   //admittedly not the same, however...
-		break;
+        // itype = PLUGIN_SERVER;   //admittedly not the same, however...
+        break;
 	case PLUGIN_MENU_TYPE_CHANNEL:
 		/* Channel contextmenu item was triggered. selectedItemID is the channelID of the selected channel */
 		itype = PLUGIN_CHANNEL;
@@ -273,13 +272,13 @@ void Plugin_Base::onMenuItemEvent(uint64 serverConnectionHandlerID, PluginMenuTy
 		itype = PLUGIN_CLIENT;
 		break;
 	default:
-		itype = PLUGIN_SERVER;
 		break;
 	}
 	info_data().RequestUpdate(serverConnectionHandlerID, selectedItemID, itype);
 }
 
-anyID Plugin_Base::my_id_move_event(uint64 sch_id, anyID client_id, uint64 new_channel_id, int visibility)
+auto Plugin_Base::my_id_move_event(uint64 sch_id, anyID client_id, uint64 new_channel_id, int visibility)
+-> anyID
 {
     if (new_channel_id == 0)
     {

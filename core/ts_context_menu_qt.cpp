@@ -10,7 +10,7 @@
 #include <cassert>
 
 /* Helper function to create a menu item */
-static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, const char* text, const char* icon)
+static auto createMenuItem(enum PluginMenuType type, int id, const char *text, const char *icon) -> struct PluginMenuItem*
 {
     auto* menuItem = (struct PluginMenuItem*)malloc(sizeof(struct PluginMenuItem));
     menuItem->type = type;
@@ -31,7 +31,7 @@ TSContextMenu::TSContextMenu(Plugin_Base* plugin)
 {
 }
 
-bool TSContextMenu::setMainIcon(const QString &icon)
+auto TSContextMenu::setMainIcon(const QString &icon) -> bool
 {
     if (m_isInit)
         return false;
@@ -40,15 +40,15 @@ bool TSContextMenu::setMainIcon(const QString &icon)
     return true;
 }
 
-int TSContextMenu::Register(QObject *p, PluginMenuType type, const QString &text, const QString &icon)
+auto TSContextMenu::Register(QObject *p, PluginMenuType type, const QString &text, const QString &icon) -> int
 {
     Q_UNUSED(p);
 
     if (m_isInit)
         return -1;
 
-	auto plugin = qobject_cast<Plugin_Base*>(parent());
-	auto& translator = plugin->translator();
+    auto *plugin = qobject_cast<Plugin_Base *>(parent());
+    auto &translator = plugin->translator();
     auto trans = translator.translate("context_menu", text.toLatin1().constData());
 
     auto id = m_Items.size();

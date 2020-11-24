@@ -8,7 +8,7 @@
 
 using namespace com::teamspeak::pluginsdk;
 
-bool TSLogging::GetErrorSound(QString &in)
+auto TSLogging::GetErrorSound(QString &in) -> bool
 {
     QString pack;
     if (TSSettings::instance()->GetSoundPack(pack))
@@ -34,7 +34,7 @@ bool TSLogging::GetErrorSound(QString &in)
     return false;
 }
 
-bool TSLogging::GetInfoIcon(QString &in)
+auto TSLogging::GetInfoIcon(QString &in) -> bool
 {
     QString pack;
     if (TSSettings::instance()->GetIconPack(pack))

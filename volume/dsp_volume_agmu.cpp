@@ -9,12 +9,15 @@
 #include <limits>
 
 // Funcs
-namespace {
-    float compute_gain_desired(int16_t peak)
-    {
-        return std::min((lin2db(std::numeric_limits<int16_t>::max() / peak)) - 2, 12.0f); // leave some headroom
-    }
-} // namespace
+namespace
+{
+
+auto compute_gain_desired(int16_t peak) -> float
+{
+    return std::min((lin2db(std::numeric_limits<int16_t>::max() / peak)) - 2, 12.0f);  // leave some headroom
+}
+
+}  // namespace
 
 void DspVolumeAGMU::process(gsl::span<int16_t> samples, int32_t channels)
 {
@@ -33,7 +36,7 @@ void DspVolumeAGMU::process(gsl::span<int16_t> samples, int32_t channels)
 }
 
 // Compute gain change
-float DspVolumeAGMU::fade_step(size_t frame_count)
+auto DspVolumeAGMU::fade_step(size_t frame_count) -> float
 {
     auto current_gain = gain_current();
     auto desired_gain = gain_desired();

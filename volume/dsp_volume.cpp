@@ -15,7 +15,7 @@ void DspVolume::process(gsl::span<int16_t> samples, int32_t channels)
     do_process(samples);
 }
 
-float DspVolume::fade_step(size_t frame_count)
+auto DspVolume::fade_step(size_t frame_count) -> float
 {
     // compute manual gain
     auto current_gain = gain_current();

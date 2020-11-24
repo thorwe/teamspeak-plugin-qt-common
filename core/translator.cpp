@@ -12,15 +12,15 @@ Translator::Translator(QObject* parent, QString prefix)
     , kPrefix(std::move(prefix))
 {}
 
-bool Translator::update()
+auto Translator::update() -> bool
 {
-    const auto kLang = TSHelpers::GetLanguage();
-    if (kLang.isEmpty())
+    const auto lang = TSHelpers::GetLanguage();
+    if (lang.isEmpty())
         return false;
 
-    const auto kIsTranslate = load(QStringLiteral(":/locales/") + kPrefix + "_" + kLang);
-    if (!kIsTranslate)
+    const auto is_translate = load(QStringLiteral(":/locales/") + kPrefix + "_" + lang);
+    if (!is_translate)
         TSLogging::Log("No translation available.");
 
-    return kIsTranslate;
+    return is_translate;
 }

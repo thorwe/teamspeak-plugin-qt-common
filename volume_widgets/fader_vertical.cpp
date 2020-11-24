@@ -16,7 +16,7 @@ FaderVertical::FaderVertical(QWidget *parent) :
 
 FaderVertical::~ FaderVertical() = default;
 
-float FaderVertical::getValue() const
+auto FaderVertical::getValue() const -> float
 {
     return static_cast< float >(ui->doubleSpinBox->value());
 }
