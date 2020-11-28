@@ -1278,7 +1278,7 @@ namespace file_transfer
         for (const auto &path : full_file_paths)
             paths.push_back(path.data());
 
-        if (paths.back() != '\0')
+        if (paths.back() != "\0")
             paths.push_back(nullptr);
 
         // TODO: yeah, it's actually plural
