@@ -1,6 +1,7 @@
 #pragma once
 
 #include <system_error>
+#include <cstdint>
 
 // The idea here is: the values are 2 bytes wide, the first byte identifies the group, the second the count
 // within that group
