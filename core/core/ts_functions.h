@@ -6,7 +6,7 @@
 
 #include "definitions.h"
 #include "plugin_definitions.h"
-#include "teamspeak/clientlib_publicdefinitions.h"
+#include "teamspeak/public_definitions.h"
 #include "teamspeak/public_definitions.h"
 
 #include "gsl/span"

@@ -2,6 +2,8 @@
 
 #include "core/ts_functions.h"
 
+#include <cstdint>
+
 namespace com::teamspeak
 {
 auto to_ts_errc(uint32_t err) -> ts_errc

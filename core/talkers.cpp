@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <mutex>
 
 using namespace com::teamspeak::pluginsdk;
 

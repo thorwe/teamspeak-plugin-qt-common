@@ -5,7 +5,7 @@
 
 #include "plugin.h"
 
-#include "teamspeak/clientlib_publicdefinitions.h"
+#include "teamspeak/public_definitions.h"
 
 using namespace com::teamspeak::pluginsdk;
 
